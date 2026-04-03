@@ -92,11 +92,16 @@ export default function Alerts() {
                                     <td className="px-10 py-7"><input type="checkbox" className="w-4 h-4 rounded border-white/10 bg-transparent" /></td>
                                     <td className="px-10 py-7 text-slate-400 font-mono italic">{new Date(a.timestamp * 1000).toLocaleString()}</td>
                                     <td className="px-10 py-7">
-                                        <span className={`px-4 py-1.5 rounded-lg border ${a.action === 'BLOCK' ? 'bg-red-500/10 text-red-400 border-red-500/20' : a.action === 'MFA' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'} uppercase tracking-widest leading-none`}>
-                                            {a.event_type || 'TRANSACTION'}
-                                        </span>
-                                    </td>
-                                    <td className="px-10 py-7 text-slate-500 font-mono tracking-tighter truncate max-w-[150px]">{a.sender_id}</td>
+                                         <div className="flex flex-col space-y-1">
+                                             <span className={`px-4 py-1.5 rounded-lg border ${a.action === 'BLOCK' ? 'bg-red-500/10 text-red-400 border-red-500/20' : a.action === 'MFA' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'} uppercase tracking-widest leading-none text-center`}>
+                                                 {a.pattern || 'ANOMALY'}
+                                             </span>
+                                             <span className="text-[9px] text-slate-600 font-bold italic truncate max-w-[200px] mt-2">
+                                                 {Array.isArray(a.reasons) ? a.reasons[0] : (typeof a.reasons === 'string' ? a.reasons : 'Statistical outlier detected')}
+                                             </span>
+                                         </div>
+                                     </td>
+                                     <td className="px-10 py-7 text-slate-500 font-mono tracking-tighter truncate max-w-[150px]">ID_{a.sender_id.slice(0, 8)}</td>
                                     <td className="px-10 py-7">
                                         <div className="flex items-center space-x-3">
                                             <div className={`w-10 h-1 rounded-full ${a.risk_score >= 70 ? 'bg-red-500' : a.risk_score >= 40 ? 'bg-amber-500' : 'bg-blue-500'} opacity-30 group-hover/row:opacity-100 transition-opacity`} />

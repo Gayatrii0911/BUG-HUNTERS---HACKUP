@@ -4,14 +4,14 @@ import SimulationCard from '../components/SimulationCard';
 import { motion } from 'framer-motion';
 
 const SCENARIOS = [
-  { id: 'normal_user', name: 'Verified Baseline', desc: 'Legitimate behavioral footprint. Zero neural drift.' },
-  { id: 'new_device_anomaly', name: 'Identity Drift', desc: 'Hardware mismatch + volume spike. High anomaly score.' },
-  { id: 'cycle_fraud', name: 'Node Laundering', desc: 'Circular nodal flow detected. Neural graph loop.' },
-  { id: 'mule_hub', name: 'Mule Aggregator', desc: 'Centralized fan-out distribution. Hub detection.' },
-  { id: 'layering_chain', name: 'Path Dispersal', desc: 'Deep multi-hop fund lineage tracking. Forensic chain.' },
-  { id: 'account_takeover', name: 'Rapid Takeover', desc: 'Abnormal velocity + credential abuse. Fraud chain.' },
-  { id: 'coordinated_synergy', name: 'Elite Cluster', desc: 'Hybrid Graph + ML fusion. Critical risk trigger.' },
-  { id: 'repeated_suspicious', name: 'Adaptive Spike', desc: 'Escalation based on nodal history matching.' }
+  { id: 'normal_user', name: 'Normal User', desc: 'Legitimate behavioral footprint. Zero neural drift.' },
+  { id: 'new_device_anomaly', name: 'High Amount / Anomaly', desc: 'Hardware mismatch + volume spike. High anomaly score.' },
+  { id: 'cycle_fraud', name: 'Cycle Fraud', desc: 'Circular nodal flow detected. Neural graph loop.' },
+  { id: 'mule_hub', name: 'Fraud Ring / Hub', desc: 'Centralized fan-out distribution. Hub detection.' },
+  { id: 'layering_chain', name: 'Multi-hop Layering', desc: 'Deep multi-hop fund lineage tracking. Forensic chain.' },
+  { id: 'account_takeover', name: 'Account Takeover', desc: 'Abnormal velocity + credential abuse. Fraud chain.' },
+  { id: 'coordinated_synergy', name: 'Coordinated Fraud', desc: 'Hybrid Graph + ML fusion. Critical risk trigger.' },
+  { id: 'repeated_suspicious', name: 'Reputation History', desc: 'Escalation based on nodal history matching.' }
 ];
 
 const Simulation = () => {

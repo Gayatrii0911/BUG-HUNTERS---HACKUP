@@ -1,11 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
-import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Alerts from './pages/Alerts';
-import Investigation from './pages/Investigation';
-import Behavior from './pages/Behavior';
+import Investigator from './pages/Investigator';
 import Simulation from './pages/Simulation';
 import './styles/theme.css';
 
@@ -22,11 +20,9 @@ function App() {
           <Navbar />
           <div className="p-8 pb-32 relative">
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/" element={<Dashboard />} />
               <Route path="/alerts" element={<Alerts />} />
-              <Route path="/investigator" element={<Investigation />} />
-              <Route path="/behavior" element={<Behavior />} />
+              <Route path="/investigator" element={<Investigator />} />
               <Route path="/simulation" element={<Simulation />} />
             </Routes>
           </div>

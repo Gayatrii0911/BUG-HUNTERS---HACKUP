@@ -3,24 +3,23 @@ import { motion } from 'framer-motion';
 
 const Sidebar = () => {
     const navItems = [
-        { name: 'Dashboard', path: '/', icon: '📊' },
-        { name: 'Discovery', path: '/discovery', icon: '🔍' },
-        { name: 'API Security', path: '/dashboard', icon: '🛡️' },
-        { name: 'Cloud Infra', path: '/cloud', icon: '☁️' },
-        { name: 'Inventory', path: '/behavior', icon: '🧬' },
-        { name: 'Attack Paths', path: '/investigator', icon: '🏹' },
-        { name: 'Vulnerability', path: '/alerts', icon: '⚠️' },
-        { name: 'Compliance', path: '/compliance', icon: '📝' },
+        { name: 'Dashboard', path: '/', icon: '📡' },
+        { name: 'Investigator', path: '/investigator', icon: '🔍' },
+        { name: 'Simulation Lab', path: '/simulation', icon: '🧪' },
+        { name: 'Telemetry', path: '/alerts', icon: '🚨' },
     ];
 
     return (
         <div className="w-80 bg-[hsl(var(--bg-deep))] h-screen p-6 flex flex-col border-r border-[hsl(var(--border-muted))] relative z-50">
             {/* Branding */}
-            <div className="flex items-center space-x-3 mb-10 px-2">
-                <div className="w-8 h-8 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-                    <span className="text-sm font-bold text-white italic">O</span>
+            <div className="flex items-center space-x-3 mb-10 px-2 group cursor-pointer">
+                <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.3)] group-hover:shadow-[0_0_40px_rgba(37,99,235,0.6)] transition-all duration-500 is-3d">
+                    <span className="text-xl font-black text-white italic">X</span>
                 </div>
-                <h1 className="text-xl font-bold font-display text-white tracking-tight">Orca</h1>
+                <div className="flex flex-col">
+                    <h1 className="text-2xl font-black font-display text-white tracking-tighter leading-none italic">Sentinel-<span className="text-blue-500">X</span></h1>
+                    <span className="text-[8px] text-slate-500 font-black uppercase tracking-[0.4em] mt-1 italic">Forensic Intelligence</span>
+                </div>
             </div>
 
             {/* Profile Brief */}

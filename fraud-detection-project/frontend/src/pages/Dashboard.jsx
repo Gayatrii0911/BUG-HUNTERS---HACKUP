@@ -10,7 +10,7 @@ const Dashboard = () => {
     const [alerts, setAlerts] = useState([]);
     const [health, setHealth] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [stats, setStats] = useState({ total: 0, high_risk: 0, blocked: 0, mfa: 0 });
+    const [stats, setStats] = useState({ total: 0, suspicious: 0, blocked: 0, mfa: 0, avg_risk: 0 });
 
     useEffect(() => {
         const load = async () => {
@@ -20,10 +20,19 @@ const Dashboard = () => {
                 setAlerts(data);
                 setHealth(h);
 
-                const high = data.filter(a => a.risk_score >= 70).length;
+                const count = data.length || 0;
+                const suspicious = data.filter(a => a.risk_score >= 40).length;
                 const blocked = data.filter(a => a.action === 'BLOCK').length;
                 const mfa = data.filter(a => a.action === 'MFA').length;
-                setStats({ total: data.length, high_risk: high, blocked, mfa });
+                const avg = count > 0 ? (data.reduce((sum, a) => sum + (a.risk_score || 0), 0) / count) : 0;
+                
+                setStats({ 
+                    total: count, 
+                    suspicious, 
+                    blocked, 
+                    mfa, 
+                    avg_risk: parseFloat(avg.toFixed(1)) 
+                });
             } catch (e) {
                 console.error(e);
             } finally {
@@ -77,10 +86,10 @@ const Dashboard = () => {
 
             {/* Neural Metric Strip (Top Stats) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <MetricCard label="Critical Risk" value={stats.high_risk} variant="red" icon="☣️" />
+                <MetricCard label="Suspicious Count" value={stats.suspicious} variant="red" icon="☣️" />
                 <MetricCard label="Neural Ingress" value={stats.total} variant="blue" icon="🪐" />
-                <MetricCard label="MFA Challenges" value={stats.mfa} variant="amber" icon="🛡️" />
-                <MetricCard label="Blocked Assets" value={stats.blocked} variant="blue" icon="🔐" />
+                <MetricCard label="Blocked Assets" value={stats.blocked} variant="amber" icon="🔐" />
+                <MetricCard label="Average Risk" value={`${stats.avg_risk}%`} variant="blue" icon="⚡" />
             </div>
 
             {/* Central Tactical Matrix (Centerpiece) */}
