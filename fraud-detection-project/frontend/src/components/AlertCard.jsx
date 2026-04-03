@@ -1,54 +1,67 @@
-const LEVEL_CONFIG = {
-  high:   { color: 'text-red-400',    bg: 'bg-red-400/10 border-red-400/20',    dot: 'bg-red-400' },
-  medium: { color: 'text-orange-400', bg: 'bg-orange-400/10 border-orange-400/20', dot: 'bg-orange-400' },
-  low:    { color: 'text-green-400',  bg: 'bg-green-400/10 border-green-400/20',  dot: 'bg-green-400' }
-}
+import { useState, useEffect } from 'react';
 
-export default function AlertCard({ alert }) {
-  const level = alert.risk_level || alert.level || 'low'
-  const config = LEVEL_CONFIG[level] || LEVEL_CONFIG.low
-
-  const reasons = alert.reasons || alert.flags || []
-  const score = alert.risk_score ?? alert.score ?? '—'
-  const decision = alert.decision || '—'
-  const timestamp = alert.timestamp || alert.created_at || ''
-  const account = alert.sender_id || alert.from_account || alert.account || '—'
+const AlertCard = ({ alert }) => {
+  const [showDetails, setShowDetails] = useState(false);
+  
+  const risk_color = alert.risk_score >= 70 ? 'text-red-400' : alert.risk_score >= 40 ? 'text-orange-400' : 'text-green-400';
+  const risk_bg = alert.risk_score >= 70 ? 'bg-red-400/5 border-red-400/10' : alert.risk_score >= 40 ? 'bg-orange-400/5 border-orange-400/10' : 'bg-green-400/5 border-green-400/10';
 
   return (
-    <div className={`border rounded-xl p-4 space-y-3 transition-all duration-200 hover:scale-[1.01] ${config.bg}`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${config.dot} animate-pulse`} />
-          <span className={`text-xs font-mono uppercase tracking-wider ${config.color}`}>{level} risk</span>
+    <div className={`p-5 rounded-2xl border ${risk_bg} transition-all hover:scale-[1.01] cursor-pointer group fade-in`}>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          <div className={`w-2 h-2 rounded-full ${risk_color.replace('text', 'bg')} animate-pulse shrink-0`}></div>
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-white uppercase tracking-widest">{alert.action || 'REVIEW'}</span>
+            <span className="text-[10px] text-[#718096] font-mono">{alert.alert_id}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`text-lg font-display font-black ${config.color}`}>{score}</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full border ${config.bg} ${config.color}`}>
-            {decision}
-          </span>
+        <div className="flex flex-col items-end">
+           <span className={`text-2xl font-black font-display ${risk_color}`}>{alert.risk_score}</span>
+           <span className="text-[10px] text-[#718096] uppercase">Risk Index</span>
         </div>
       </div>
 
-      <div className="text-xs text-slate-400 font-mono">
-        Account: <span className="text-white">{account}</span>
+      <div className="space-y-2 mb-4">
+        <div className="flex items-center justify-between text-xs">
+           <span className="text-slate-500">Flow</span>
+           <span className="text-white font-mono">{alert.sender_id} → {alert.receiver_id || 'N/A'}</span>
+        </div>
+        <div className="flex items-center justify-between text-xs">
+           <span className="text-slate-500">Amount</span>
+           <span className="text-white font-bold">Rs. {alert.amount?.toLocaleString() || 0}</span>
+        </div>
       </div>
 
-      {reasons.length > 0 && (
-        <div className="space-y-1">
-          {reasons.slice(0, 3).map((r, i) => (
-            <div key={i} className="flex items-start gap-2 text-xs text-slate-300">
-              <span className={`${config.color} mt-0.5`}>›</span>
-              {r}
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="space-y-1">
+         {alert.reasons?.slice(0, 2).map((r, i) => (
+           <div key={i} className="text-[10px] text-slate-400 flex items-center space-x-2">
+              <span className={risk_color}>›</span>
+              <span>{r}</span>
+           </div>
+         ))}
+      </div>
 
-      {timestamp && (
-        <div className="text-xs text-slate-600 font-mono border-t border-white/5 pt-2">
-          {new Date(timestamp).toLocaleString()}
+      <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+         <span className="text-[9px] text-slate-600 font-mono italic">Signature: {alert.pattern || 'Anomaly'}</span>
+         <span className="text-[9px] text-[#3182ce] hover:underline font-bold" onClick={() => setShowDetails(!showDetails)}>
+            {showDetails ? 'Hide Forensics' : 'View Full Trace'}
+         </span>
+      </div>
+      
+      {showDetails && (
+        <div className="mt-4 p-3 bg-black/20 rounded-xl space-y-2 border border-white/5 fade-in">
+           <div className="text-[9px] text-[#718096] uppercase flex justify-between">
+              <span>Risk Classification</span>
+              <span>{alert.reason_categories ? Object.keys(alert.reason_categories).filter(k => alert.reason_categories[k].length > 0).join(', ') : 'Hybrid'}</span>
+           </div>
+           <div className="h-1 w-full bg-white/5 rounded-full">
+              <div className="h-full bg-[#3182ce] w-[80%]"></div>
+           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
+
+export default AlertCard;
