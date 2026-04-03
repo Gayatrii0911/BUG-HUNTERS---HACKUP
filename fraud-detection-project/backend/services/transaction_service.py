@@ -31,7 +31,7 @@ def process_transaction(tx: dict) -> dict:
     amount = tx.get("amount", 0)
 
     # 1. Graph Intelligence (Real-time update & Analysis)
-    add_transaction(sender, receiver, amount)
+    # DEFERRED: add_transaction(sender, receiver, amount) - now happens after decision
     graph_res = generate_signals(sender, receiver, amount)
     graph_signals = graph_res.get("signals", {})
 
@@ -108,6 +108,13 @@ def process_transaction(tx: dict) -> dict:
         profile["recent_risk_scores"].pop(0)
 
     try:
+        # 7. Persistence & Graph Uplink (Updated with Decision Metadata)
+        is_fraud_tx = final_risk_score >= 70 or decision.get("critical_fraud", False)
+        is_blocked_tx = decision["action"] == "BLOCK"
+        raw_reasons = decision.get("reasons", ["Irregular fund velocity observed"])
+        reasons_text = f"SYSTEM: {decision['action']} | REASON: {', '.join(raw_reasons)}"
+        add_transaction(sender, receiver, amount, is_fraud=is_fraud_tx, is_blocked=is_blocked_tx, transaction_id=tx["transaction_id"], decision=decision["action"], risk_score=final_risk_score, reasons=reasons_text)
+
         save_transaction(tx, risk_result, decision)
         save_training_sample(features, 0)
         

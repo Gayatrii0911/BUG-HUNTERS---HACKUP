@@ -18,7 +18,7 @@ def run_scenario(name: str):
             {"sender_id": "RingC", "receiver_id": "RingA", "amount": 1000}
         ],
         "mule_hub": [
-            {"sender_id": "MuleCenter", "receiver_id": f"User_{i}", "amount": 500} for i in range(8)
+            *[{"sender_id": "MuleCenter", "receiver_id": f"User_{i}", "amount": 55000} for i in range(12)]
         ],
         "layering_chain": [
             {"sender_id": "Boss", "receiver_id": "L1", "amount": 5000},
@@ -36,11 +36,11 @@ def run_scenario(name: str):
         ],
         "coordinated_synergy": [
             # Build hub
-            *[{"sender_id": "BossX", "receiver_id": f"Node_{i}", "amount": 10} for i in range(10)],
+            *[{"sender_id": "BossX", "receiver_id": f"Node_{i}", "amount": 1000} for i in range(10)],
             # Cycle
-            {"sender_id": "Node_0", "receiver_id": "BossX", "amount": 5000},
+            {"sender_id": "Node_0", "receiver_id": "BossX", "amount": 50000},
             # Final Boosted TX
-            {"sender_id": "BossX", "receiver_id": "Node_0", "amount": 999999, "location": "N_KOREA", "device_id": "DARK_DEV"}
+            {"sender_id": "BossX", "receiver_id": "Target_Asset", "amount": 999999, "location": "N_KOREA", "device_id": "DARK_DEV"}
         ],
         "repeated_suspicious": [
              {"sender_id": "Repeater", "receiver_id": "A", "amount": 5000},

@@ -3,12 +3,15 @@ import time
 
 graph = nx.MultiDiGraph()
 
-def add_transaction(from_account: str, to_account: str, amount: float, timestamp: float = None):
+def add_transaction(from_account: str, to_account: str, amount: float, timestamp: float = None, is_fraud: bool = False, is_blocked: bool = False, transaction_id: str = None, decision: str = "APPROVE", risk_score: float = 0, reasons: str = None):
     if timestamp is None:
         timestamp = time.time()
-    graph.add_node(from_account)
+    
+    # Ensure nodes exist and update sender node risk metadata
+    graph.add_node(from_account, is_fraudulent=is_fraud, is_blocked=is_blocked, risk_score=risk_score, reasons=reasons)
     graph.add_node(to_account)
-    graph.add_edge(from_account, to_account, amount=amount, timestamp=timestamp)
+    
+    graph.add_edge(from_account, to_account, amount=amount, timestamp=timestamp, is_fraud=is_fraud, is_blocked=is_blocked, transaction_id=transaction_id, decision=decision)
 
 def get_graph():
     return graph

@@ -11,6 +11,7 @@ def build_full_graph_payload(graph):
             "data": {
                 "id": str(node),
                 "label": str(node),
+                "is_moderate_risk": 40 <= data.get("risk_score", 0) < 70,
                 **data
             }
         })
@@ -27,7 +28,7 @@ def build_full_graph_payload(graph):
         
     return payload
 
-def build_subgraph_for_account(graph, account_id, depth=2):
+def build_subgraph_for_account(graph, account_id, depth=1):
     """
     Extract a subgraph around an account up to a certain depth and format it for Cytoscape.js
     """

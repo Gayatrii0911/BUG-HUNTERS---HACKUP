@@ -9,6 +9,13 @@ router = APIRouter()
 def trace_account(account: str, max_depth: int = 4):
     graph = get_graph()
 
+    # Check if 'account' is actually a transaction_id on an edge
+    for u, v, k, data in graph.edges(data=True, keys=True):
+        if data.get("transaction_id") == account:
+            # We found the specific transaction, trace from its source
+            account = str(u)
+            break
+
     if account not in graph:
         return {
             "status": "not_found",

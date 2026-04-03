@@ -54,6 +54,11 @@ def compute_risk_score(
     else:
         anomaly_level = "LOW"
 
+    # Extreme Amount Escalation (Demo Mode)
+    if deviations.get("extreme_amount"):
+        final_score = max(final_score, 75.0)
+        anomaly_level = "CRITICAL"
+
     # 7. Fraud Chain Pre-calculation for Confidence
     is_new_access = deviations.get("new_device", False) or deviations.get("new_location", False)
     fraud_chain = is_new_access and anomaly_score > 0.5

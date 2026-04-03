@@ -55,9 +55,13 @@ def compute_deviations(user_id: str, tx: Dict[str, Any]) -> Dict[str, Any]:
     except:
         pass
 
+    # Extreme Amount Spike (Custom Calibration for Demo)
+    result["extreme_amount"] = tx.get("amount", 0) > 50000
+
     flags = [
-        result["amount_deviation"] > 2.5,
+        result["amount_deviation"] > 2.0,
         result["amount_exceeds_2x"],
+        result["extreme_amount"],
         result["frequency_spike"],
         result["new_receiver"],
         result["new_device"],
