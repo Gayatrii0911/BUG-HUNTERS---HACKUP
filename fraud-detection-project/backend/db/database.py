@@ -39,3 +39,12 @@ def init_db():
     """)
     conn.commit()
     conn.close()
+
+def reset_all_db():
+    """Wipes all persistent storage tables for fresh demo replay."""
+    conn = get_connection()
+    conn.execute("DELETE FROM transactions")
+    conn.execute("DELETE FROM alerts")
+    conn.execute("DELETE FROM ml_training_data")
+    conn.commit()
+    conn.close()

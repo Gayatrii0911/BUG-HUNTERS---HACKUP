@@ -1,67 +1,62 @@
-import random
 import time
-import uuid
 from backend.services.transaction_service import process_transaction
 
-class SimulationService:
-    @staticmethod
-    def run_normal_wave(count: int = 10):
-        """Simulates a batch of normal, low-risk transactions."""
-        print(f"[Simulation] Running Normal Wave ({count} tx)...")
-        results = []
-        for i in range(count):
-            tx = {
-                "sender_id": f"user_{random.randint(100, 200)}",
-                "receiver_id": f"user_{random.randint(300, 400)}",
-                "amount": round(random.uniform(10, 500), 2),
-                "device_id": f"device_{random.randint(1, 50)}",
-                "location": random.choice(["New York", "London", "Mumbai", "Tokyo"]),
-                "channel": "web"
-            }
-            results.append(process_transaction(tx))
-        return results
+def run_scenario(name: str):
+    """
+    Executes a specific fraud scenario through the real real-time pipeline.
+    """
+    scenarios = {
+        "normal_user": [
+            {"sender_id": "User_01", "receiver_id": "Amazon", "amount": 1500, "location": "Noida", "device_id": "D_NORM"}
+        ],
+        "new_device_anomaly": [
+            {"sender_id": "User_01", "receiver_id": "GamerStore", "amount": 15000, "location": "Bangalore", "device_id": "D_NEW"}
+        ],
+        "cycle_fraud": [
+            {"sender_id": "RingA", "receiver_id": "RingB", "amount": 1000},
+            {"sender_id": "RingB", "receiver_id": "RingC", "amount": 1000},
+            {"sender_id": "RingC", "receiver_id": "RingA", "amount": 1000}
+        ],
+        "mule_hub": [
+            {"sender_id": "MuleCenter", "receiver_id": f"User_{i}", "amount": 500} for i in range(8)
+        ],
+        "layering_chain": [
+            {"sender_id": "Boss", "receiver_id": "L1", "amount": 5000},
+            {"sender_id": "L1", "receiver_id": "L2", "amount": 5000},
+            {"sender_id": "L2", "receiver_id": "L3", "amount": 5000},
+            {"sender_id": "L3", "receiver_id": "L4", "amount": 5000},
+            {"sender_id": "L4", "receiver_id": "Offshore", "amount": 5000}
+        ],
+        "smurfing": [
+            {"sender_id": "Smurf", "receiver_id": "Recipient", "amount": 50} for _ in range(5)
+        ],
+        "account_takeover": [
+            {"sender_id": "Victim", "receiver_id": "Merchant", "amount": 500, "device_id": "V_DEV"},
+            {"sender_id": "Victim", "receiver_id": "Evil", "amount": 95000, "device_id": "HACKER_HW", "location": "Unknown"}
+        ],
+        "coordinated_synergy": [
+            # Build hub
+            *[{"sender_id": "BossX", "receiver_id": f"Node_{i}", "amount": 10} for i in range(10)],
+            # Cycle
+            {"sender_id": "Node_0", "receiver_id": "BossX", "amount": 5000},
+            # Final Boosted TX
+            {"sender_id": "BossX", "receiver_id": "Node_0", "amount": 999999, "location": "N_KOREA", "device_id": "DARK_DEV"}
+        ],
+        "repeated_suspicious": [
+             {"sender_id": "Repeater", "receiver_id": "A", "amount": 5000},
+             {"sender_id": "Repeater", "receiver_id": "B", "amount": 5000},
+             {"sender_id": "Repeater", "receiver_id": "C", "amount": 5000} # Escalation should trigger
+        ]
+    }
 
-    @staticmethod
-    def run_ato_attack():
-        """Simulates an Account Takeover (ATO) pattern."""
-        print("[Simulation] Running ATO Attack...")
-        user_id = "victim_99"
-        # 1. Warm up profile with a normal txn
-        process_transaction({
-            "sender_id": user_id,
-            "receiver_id": "friend_1",
-            "amount": 50.0,
-            "device_id": "safe_laptop",
-            "location": "New York",
-            "channel": "web"
-        })
-        
-        # 2. The Attack: New device, new location, high amount
-        attack_tx = {
-            "sender_id": user_id,
-            "receiver_id": "attacker_wallet",
-            "amount": 5000.0,
-            "device_id": "stolen_phone_xyz",
-            "location": "Unknown_Proxy",
-            "channel": "tor"
-        }
-        return [process_transaction(attack_tx)]
+    if name not in scenarios:
+        raise ValueError(f"Scenario '{name}' not found")
 
-    @staticmethod
-    def run_fraud_ring(size: int = 5):
-        """Simulates a coordinated fraud ring (chain of transfers)."""
-        print(f"[Simulation] Running Fraud Ring (Size: {size})...")
-        results = []
-        # Create a chain: A -> B -> C -> D -> E
-        nodes = [f"bot_{i}" for i in range(size)]
-        for i in range(len(nodes) - 1):
-            tx = {
-                "sender_id": nodes[i],
-                "receiver_id": nodes[i+1],
-                "amount": 1000.0,
-                "device_id": "shared_fraud_server",
-                "location": "Global",
-                "channel": "api"
-            }
-            results.append(process_transaction(tx))
-        return results
+    results = []
+    print(f"--- RUNNING SCENARIO: {name} ---")
+    for tx in scenarios[name]:
+        res = process_transaction(tx)
+        results.append(res)
+        print(f"TX {res['transaction_id']} Result: {res['decision']} (Score: {res['risk_score']})")
+    
+    return results

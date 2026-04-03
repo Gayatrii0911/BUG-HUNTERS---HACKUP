@@ -7,61 +7,99 @@ def generate_explanation(
     risk_result: Dict[str, Any],
     recent_scores: List[float] = None,
     identity_signals: Dict[str, Any] = None
-) -> List[str]:
+) -> Dict[str, Any]:
+    """
+    Elite-level Categorized Explanation Engine (Aligned with Team Contract).
+    Returns both a flat list and a categorized mapping.
+    """
     reasons = []
+    categories = {
+        "behavior": [],
+        "device": [],
+        "ml": [],
+        "graph": [],
+        "fraud_chain": []
+    }
     
     # 1. Behavioral (Specific)
     amount = deviations.get("amount", 0)
     avg = deviations.get("avg_amount", 0)
     if deviations.get("amount_deviation", 0) > 2.5:
-        reasons.append(f"Transaction amount Rs {amount:,} significantly exceeds user average Rs {avg:,}")
+        msg = f"Amount {amount:,} significantly exceeds user average {avg:,}"
+        reasons.append(msg)
+        categories["behavior"].append(msg)
     
     if deviations.get("time_deviation"):
-        reasons.append("Transaction time is unusual for this user's historic profile")
+        msg = "Transaction at unusual hour for this historic profile"
+        reasons.append(msg)
+        categories["behavior"].append(msg)
 
+    # 2. Device Intelligence
     if deviations.get("new_device"):
-        reasons.append(f"Login from a new hardware fingerprint (Device ID: {deviations.get('device_id', 'Unlisted')})")
-    
-    if deviations.get("new_location"):
-        reasons.append(f"Transaction from geographic location mismatch: {deviations.get('location', 'Unknown')}")
+        msg = f"First-time usage of hardware fingerprint {deviations.get('device_id', 'Unlisted')}"
+        reasons.append(msg)
+        categories["device"].append(msg)
 
-    # 2. Device/Network Intelligence
     if device_info.get("impossible_travel"):
-        reasons.append("Impossible travel detected (Dual location activity within physical limits)")
+        msg = "Impossible travel detected (Dual location activity)"
+        reasons.append(msg)
+        categories["device"].append(msg)
     
     if device_info.get("suspicious_channel"):
-        reasons.append("Transaction routed through metadata-obfuscating network (VPN/Tor)")
+        msg = "Transaction routed through anonymizing network (VPN/Tor)"
+        reasons.append(msg)
+        categories["device"].append(msg)
 
-    # 3. Graph Intelligence (Elite Hops & Flows)
+    # 3. Graph Intelligence
     if graph_signals.get("has_cycle"):
-        reasons.append("Circular fund flow detected (Money Laundering Ring)")
+        msg = "Circular money movement detected (Layering/Laundering)"
+        reasons.append(msg)
+        categories["graph"].append(msg)
     
     if graph_signals.get("is_hub"):
-        reasons.append(f"Account flagged as 'Hub' (Connected to {graph_signals.get('connections', 0)} entities in graph)")
+        msg = "Account flagged as transaction hub (suspicious fan-out)"
+        reasons.append(msg)
+        categories["graph"].append(msg)
 
     if graph_signals.get("suspicious_chain"):
-        reasons.append("Money laundering chain detected (Multi-hop fund layering flow)")
+        msg = "Involved in a multi-hop suspicious layering path"
+        reasons.append(msg)
+        categories["graph"].append(msg)
 
     if graph_signals.get("is_smurfing"):
-        reasons.append("Structuring detected (Multiple rapid small transactions between same accounts)")
-        
-    if graph_signals.get("is_cluster"):
-        reasons.append("Part of an isolated, highly-active fraud cluster/clique")
+        msg = "Structuring detected (Multiple rapid small transactions)"
+        reasons.append(msg)
+        categories["graph"].append(msg)
 
     # 4. ML Anomaly
     score = risk_result.get("anomaly_score", 0)
     level = risk_result.get("anomaly_level", "LOW")
     if level != "LOW":
-        reasons.append(f"AI Anomaly check returned {level} confidence score ({score:.2f})")
+        msg = f"AI Anomaly check returned {level} confidence score ({score:.2f})"
+        reasons.append(msg)
+        categories["ml"].append(msg)
 
-    # 5. Combined / Identity Intelligence
+    # 5. Fraud Chain / Synergy / History
     if identity_signals and identity_signals.get("identity_count", 0) >= 3:
-        reasons.append(f"Synthetic identity signal: {identity_signals['identity_count']} unique accounts linked to this device")
+        msg = f"Synthetic identity signal: {identity_signals['identity_count']} unique accounts on device"
+        reasons.append(msg)
+        categories["fraud_chain"].append(msg)
 
     if recent_scores and len([s for s in recent_scores if s > 50]) >= 2:
-        reasons.append("Escalated risk due to repeated suspicious behavior in transaction history")
+        msg = "Repeated suspicious behavioral history detected"
+        reasons.append(msg)
+        categories["fraud_chain"].append(msg)
+
+    # Coordinated Synergy
+    if risk_result.get("components", {}).get("graph_risk", 0) > 60 and risk_result.get("components", {}).get("ml_risk", 0) > 60:
+        msg = "Network Synergy: Coordinated graph and AI triggers detected"
+        reasons.append(msg)
+        categories["fraud_chain"].append(msg)
 
     if not reasons:
-        reasons.append("No abnormal behavioral or relationship patterns detected")
+        reasons.append("No abnormal patterns detected")
 
-    return reasons
+    return {
+        "reasons": reasons,
+        "reason_categories": categories
+    }

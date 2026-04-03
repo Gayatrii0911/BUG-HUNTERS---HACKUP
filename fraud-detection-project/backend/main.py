@@ -1,3 +1,4 @@
+import time
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.transaction import router as transaction_router
@@ -9,7 +10,13 @@ from backend.routes.account import router as account_router
 from backend.db.database import init_db
 from backend.ml.model_loader import warmup
 
-app = FastAPI(title="Fraud Detection API")
+START_TIME = time.time()
+
+app = FastAPI(
+    title="Elite Real-Time Fraud Intelligence API",
+    description="Graph-ML Hybrid Transaction Scoring & Decisioning Engine",
+    version="1.2.0"
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,17 +31,28 @@ def startup():
     init_db()
     warmup()
 
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy",
+        "version": "1.2.0",
+        "uptime_seconds": int(time.time() - START_TIME),
+        "engine": "Hybrid-Graph-ML",
+        "ml_model": "IsolationForest-v1"
+    }
+
+@app.get("/")
+def root():
+    return {
+        "project": "Graph-Based Real-Time Fraud Detection & Fund Flow Tracking",
+        "status": "online",
+        "api_docs": "/docs",
+        "system_health": "/health"
+    }
+
 app.include_router(transaction_router)
 app.include_router(debug_router)
 app.include_router(alerts_router)
 app.include_router(simulation_router)
 app.include_router(trace_router)
 app.include_router(account_router)
-
-@app.get("/health")
-def health():
-    return {"status": "ok", "message": "API is running"}
-
-@app.get("/")
-def root():
-    return {"status": "ok", "message": "Fraud Detection API is running"}

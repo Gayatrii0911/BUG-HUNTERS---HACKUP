@@ -25,7 +25,7 @@ def process_transaction(tx: dict) -> dict:
     receiver = tx.get("receiver_id", "unknown")
     amount = tx.get("amount", 0)
 
-    # 1. Graph Intelligence (Real-time update & Analysis)
+    # 1. Graph Intelligence
     add_transaction(sender, receiver, amount)
     graph_res = generate_signals(sender, receiver, amount)
     graph_signals = graph_res.get("signals", {})
@@ -36,19 +36,16 @@ def process_transaction(tx: dict) -> dict:
     deviations = behavior["deviations"]
     device_info = behavior["device_info"]
 
-    # 3. Synthetic Identity Detection (Cross-User hardware)
+    # 3. Identity (Shared hardware)
     device_id = tx.get("device_id", "unknown")
     associated_users = get_device_users(device_id) if device_id != "unknown" else []
-    identity_signals = {
-        "shared_hardware_users": associated_users,
-        "identity_count": len(associated_users)
-    }
+    identity_signals = {"shared_hardware_users": associated_users, "identity_count": len(associated_users)}
 
     # 4. ML Anomaly Scoring
     features = extract_features(tx, deviations, device_info)
     anomaly_score = score_transaction(features)
 
-    # 5. Elite Fusion Scoring (Coordinated + History + Identity)
+    # 5. Elite Fusion Scoring
     risk_result = compute_risk_score(
         graph_signals, 
         anomaly_score, 
@@ -58,30 +55,20 @@ def process_transaction(tx: dict) -> dict:
         identity_signals
     )
     
-    # 6. Decision & Explanation
-    decision = make_decision(
-        risk_result["risk_score"], 
-        deviations, 
-        device_info, 
-        risk_result["anomaly_level"]
-    )
+    # 6. Decision & Explanation (Regrouped)
+    decision = make_decision(risk_result["risk_score"], deviations, device_info, risk_result["anomaly_level"])
     
-    reasons = generate_explanation(
-        deviations, 
-        device_info, 
-        graph_signals, 
-        risk_result, 
-        profile["recent_risk_scores"],
-        identity_signals
+    explain_output = generate_explanation(
+        deviations, device_info, graph_signals, risk_result, 
+        profile["recent_risk_scores"], identity_signals
     )
 
-    alert = generate_and_store_alert(tx, decision, reasons)
+    alert = generate_and_store_alert(tx, decision, explain_output["reasons"])
     
-    # 7. Persistence & Lifecycle
+    # 7. Lifecycle & ML update
     update_user_profile(tx)
     profile["recent_risk_scores"].append(risk_result["risk_score"])
-    if len(profile["recent_risk_scores"]) > 5:
-        profile["recent_risk_scores"].pop(0)
+    if len(profile["recent_risk_scores"]) > 5: profile["recent_risk_scores"].pop(0)
 
     try:
         save_transaction(tx, risk_result, decision)
@@ -91,22 +78,22 @@ def process_transaction(tx: dict) -> dict:
         _tx_count += 1
         if _tx_count >= RETRAIN_THRESHOLD:
             all_data = get_training_data()
-            if all_data:
-                retrain(all_data)
-                _tx_count = 0
+            if all_data: retrain(all_data); _tx_count = 0
     except Exception as e:
         print(f"Post-processing error: {e}")
 
-    # ELITE RESPONSE (Matches Section 9 of Tech Spec)
+    # ELITE RESPONSE (Aligned with Team Contract)
     return {
         "transaction_id": tx["transaction_id"],
         "risk_score": risk_result["risk_score"],
         "risk_level": risk_result["risk_level"],
         "decision": decision["action"],
-        "reasons": reasons,
+        "reasons": explain_output["reasons"],
+        "reason_categories": explain_output["reason_categories"],
         "score_breakdown": risk_result["components"],
         "anomaly_score": risk_result["anomaly_score"],
         "anomaly_level": risk_result["anomaly_level"],
+        "confidence": 0.3, # Optional brownie point field
         "fraud_chain_detected": decision.get("fraud_chain_detected", False),
         "is_pre_transaction_check": True,
         "alert": risk_result["risk_score"] >= 40,
