@@ -1,23 +1,29 @@
-from fastapi import APIRouter
-from backend.services.simulation_service import SimulationService
-from pydantic import BaseModel
-from typing import Optional
+from fastapi import APIRouter, HTTPException
+from backend.services.simulation_service import run_scenario
+from backend.db.database import reset_all_db
 
-router = APIRouter()
+router = APIRouter(prefix="/simulation")
 
-class SimulationRequest(BaseModel):
-    pattern: str # "normal", "ato", "fraud_ring"
-    count: Optional[int] = 10
+@router.post("/run/{scenario_name}")
+def execute_scenario(scenario_name: str):
+    try:
+        results = run_scenario(scenario_name)
+        return {"status": "success", "scenario": scenario_name, "steps": len(results), "results": results}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/simulate")
-def trigger_simulation(request: SimulationRequest):
-    if request.pattern == "normal":
-        results = SimulationService.run_normal_wave(request.count)
-    elif request.pattern == "ato":
-        results = SimulationService.run_ato_attack()
-    elif request.pattern == "fraud_ring":
-        results = SimulationService.run_fraud_ring(request.count)
-    else:
-        return {"error": "Invalid pattern"}
+@router.post("/reset")
+def reset_system():
+    """Wipes all databases and graph state for a fresh demo."""
+    from backend.graph.builder import reset_graph
+    from backend.behavior.profile_store import reset_profiles
+    from backend.alerts.store import clear_alerts
     
-    return {"message": f"Simulation of {request.pattern} completed.", "count": len(results)}
+    reset_graph()
+    reset_profiles()
+    clear_alerts()
+    reset_all_db()
+    
+    return {"status": "ok", "message": "All backend states reset"}

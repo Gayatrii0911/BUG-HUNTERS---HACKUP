@@ -16,6 +16,11 @@ _tx_count = 0
 RETRAIN_THRESHOLD = 20
 
 def process_transaction(tx: dict) -> dict:
+    """
+    Elite Real-Time Transaction Orchestrator.
+    Synchronously processes Graph, Behavioral, and ML intelligence.
+    Returns: A full Section 9 compliant decision object.
+    """
     if not tx.get("transaction_id"):
         tx["transaction_id"] = str(uuid.uuid4())
     if not tx.get("timestamp"):
@@ -44,7 +49,7 @@ def process_transaction(tx: dict) -> dict:
         "identity_count": len(associated_users)
     }
 
-    # 4. ML Anomly Scoring
+    # 4. ML Anomaly Scoring
     features = extract_features(tx, deviations, device_info)
     anomaly_score = score_transaction(features)
 
@@ -89,14 +94,14 @@ def process_transaction(tx: dict) -> dict:
 
     # If fraud chain detected, add specifically to categories
     if decision.get("fraud_chain_detected"):
-        chain_msg = "Suspicious login followed by anomalous transaction (possible account takeover)"
+        chain_msg = {"message": "Suspicious login followed by anomalous transaction (possible account takeover)", "type": "fraud_chain"}
         if chain_msg not in reason_categories["fraud_chain"]:
             reason_categories["fraud_chain"].append(chain_msg)
             reasons.append(chain_msg)
 
     alert = generate_and_store_alert(tx, decision, reasons)
     
-    # 7. Persistence & Lifecycle
+    # 7. Persistence & Lifecycle (Update profiles only after scoring)
     update_user_profile(tx)
     profile["recent_risk_scores"].append(final_risk_score)
     if len(profile["recent_risk_scores"]) > 5:
@@ -131,4 +136,5 @@ def process_transaction(tx: dict) -> dict:
         "fraud_chain_detected": decision.get("fraud_chain_detected", False),
         "is_pre_transaction_check": True,
         "alert": risk_result["risk_score"] >= 40,
-    }
+        "alert_id": alert.get("alert_id") if risk_result["risk_score"] >= 40 else "N/A"
+    }
