@@ -1,31 +1,42 @@
-const BASE_URL = 'http://127.0.0.1:8000'
+import axios from 'axios';
 
-export async function submitTransaction(data) {
-  const response = await fetch(`${BASE_URL}/transaction`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  if (!response.ok) {
-    const err = await response.json()
-    throw new Error(err.detail || 'Transaction failed')
-  }
-  return response.json()
-}
+const API_BASE_URL = 'http://localhost:8000';
 
-export async function fetchAlerts() {
-  const response = await fetch(`${BASE_URL}/alerts`)
-  if (!response.ok) throw new Error('Failed to fetch alerts')
-  return response.json()
-}
+const api = axios.create({
+  baseURL: API_BASE_URL,
+});
 
-export async function fetchTrace(account) {
-  const response = await fetch(`${BASE_URL}/trace/${account}`)
-  if (!response.ok) throw new Error('Failed to fetch trace')
-  return response.json()
-}
+export const processTransaction = async (data) => {
+  const response = await api.post('/transaction', data);
+  return response.data;
+};
 
-export async function fetchHealth() {
-  const response = await fetch(`${BASE_URL}/health`)
-  return response.json()
-}
+export const fetchAlerts = async () => {
+  const response = await api.get('/alerts');
+  return response.data;
+};
+
+export const fetchTrace = async (accountId) => {
+  const response = await api.get(`/trace/${accountId}`);
+  return response.data;
+};
+
+export const runScenario = async (name) => {
+  const response = await api.post(`/simulation/run/${name}`);
+  return response.data;
+};
+
+export const resetSystem = async () => {
+  const response = await api.post('/simulation/reset');
+  return response.data;
+};
+
+export const fetchHealth = async () => {
+  const response = await api.get('/health');
+  return response.data;
+};
+
+export const fetchAccountSummary = async (accountId) => {
+  const response = await api.get(`/account/${accountId}`);
+  return response.data;
+};
