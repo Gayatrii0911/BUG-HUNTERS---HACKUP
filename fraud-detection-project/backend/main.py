@@ -5,6 +5,7 @@ from backend.routes.debug import router as debug_router
 from backend.routes.alerts import router as alerts_router
 from backend.routes.simulation import router as simulation_router
 from backend.routes.trace import router as trace_router
+from backend.routes.account import router as account_router
 from backend.db.database import init_db
 from backend.ml.model_loader import warmup
 
@@ -28,6 +29,7 @@ app.include_router(debug_router)
 app.include_router(alerts_router)
 app.include_router(simulation_router)
 app.include_router(trace_router)
+app.include_router(account_router)
 
 @app.get("/health")
 def health():
