@@ -1,33 +1,35 @@
 from typing import Dict, Any
 
-def make_decision(risk_score: float, deviations: Dict, device_info: Dict) -> Dict[str, Any]:
+def make_decision(risk_score: float, deviations: Dict, device_info: Dict, anomaly_level: str) -> Dict[str, Any]:
     """
-    APPROVE  : risk < 40
-    MFA      : 40 <= risk < 70
-    BLOCK    : risk >= 70
+    Elite-level decisioning:
+    - Threshold-based actions
+    - Overrides for extreme threats
+    - Fraud chain markers
     """
     if risk_score >= 70:
         action = "BLOCK"
-        reason = "High fraud risk detected"
         color = "red"
     elif risk_score >= 40:
         action = "MFA"
-        reason = "Elevated risk — additional verification required"
         color = "amber"
     else:
         action = "APPROVE"
-        reason = "Transaction appears legitimate"
         color = "green"
 
-    # Override to BLOCK on extreme device signals
-    if device_info.get("impossible_travel") and device_info.get("device_user_mismatch"):
+    # Fraud Chain Detection: (New Device/Location) + HIGH Anomaly
+    is_ato_signal = deviations.get("new_device") or device_info.get("impossible_travel")
+    fraud_chain = is_ato_signal and anomaly_level == "HIGH"
+
+    # Override: Force BLOCK on fraud chains
+    if fraud_chain:
         action = "BLOCK"
-        reason = "Device conflict + impossible travel detected"
         color = "red"
 
     return {
         "action": action,
-        "reason": reason,
         "color": color,
         "risk_score": risk_score,
+        "fraud_chain_detected": fraud_chain,
+        "is_pre_transaction_check": True
     }
