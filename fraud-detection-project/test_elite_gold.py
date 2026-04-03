@@ -2,15 +2,15 @@ import requests
 import json
 import time
 
-BASE_URL = "http://127.0.0.1:8001"
+BASE_URL = "http://127.0.0.1:8000"
 
-def test_simulation(pattern, count=5):
-    print(f"\n--- Triggering {pattern.upper()} simulation ({count} tx) ---")
-    payload = {"pattern": pattern, "count": count}
+def test_simulation(scenario):
+    print(f"\n--- Triggering {scenario.upper()} simulation ---")
     try:
-        response = requests.post(f"{BASE_URL}/simulate", json=payload)
+        response = requests.post(f"{BASE_URL}/simulation/run/{scenario}")
         if response.status_code == 200:
-            print(f"Success: {response.json()['message']}")
+            result = response.json()
+            print(f"Success: {result['scenario']} completed with {result['steps']} steps.")
         else:
             print(f"Error: {response.status_code} - {response.text}")
     except Exception as e:
@@ -18,12 +18,11 @@ def test_simulation(pattern, count=5):
 
 if __name__ == "__main__":
     # 1. Run a normal wave to populate DB and trigger retraining eventually
-    # RETRAIN_THRESHOLD is 20, so we run 22 normal ones
-    test_simulation("normal", count=22)
+    test_simulation("normal_user")
     
-    # 2. Check health after retraining should have happened
-    time.sleep(2)
-    print("\n--- Verifying server status after retraining ---")
+    # 2. Check health
+    time.sleep(1)
+    print("\n--- Verifying server status ---")
     try:
         resp = requests.get(f"{BASE_URL}/health")
         print(f"Health Response: {resp.json()}")
@@ -31,9 +30,12 @@ if __name__ == "__main__":
         print(f"Health check failed: {e}")
 
     # 3. Run an ATO attack simulation
-    test_simulation("ato", count=1)
+    test_simulation("account_takeover")
     
-    # 4. Run a Fraud Ring simulation
-    test_simulation("fraud_ring", count=5)
+    # 4. Run a Fraud Ring (Cycle) simulation
+    test_simulation("cycle_fraud")
+    
+    # 5. Run Synthetic Identity (Coordinated) simulation
+    test_simulation("coordinated_synergy")
     
     print("\nElite Gold Verification Complete. Check uvicorn terminal for '[ML] Retraining' logs.")

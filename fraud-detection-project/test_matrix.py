@@ -1,3 +1,11 @@
+import typing
+# Python 3.13 Compatibility Patch for Pydantic v1 / FastAPI
+if hasattr(typing, 'ForwardRef'):
+    _old_evaluate = typing.ForwardRef._evaluate
+    def _new_evaluate(self, globalns, localns, recursive_guard=None):
+        return _old_evaluate(self, globalns, localns, recursive_guard=recursive_guard)
+    typing.ForwardRef._evaluate = _new_evaluate
+
 from fastapi.testclient import TestClient
 from backend.main import app
 
@@ -15,14 +23,11 @@ def make_tx(sender, receiver, amount, device="device_1", location="NY"):
 def print_result(name, res):
     print(f"--- {name} ---")
     data = res.json()
-    print("Action:", data.get("action"))
+    print("Decision:", data.get("decision"))
     print("Risk Score:", data.get("risk_score"))
-    print("Reasons:", data.get("reasons"))
-    print("Graph flags:", {
-        "cycle": data.get("graph_signals", {}).get("has_cycle"),
-        "hub/suspicious": data.get("graph_signals", {}).get("suspicious_connections"),
-        "rapid": data.get("graph_signals", {}).get("rapid_transactions")
-    })
+    print("Structured Reasons:", data.get("reasons"))
+    print("Breakdown:", data.get("score_breakdown"))
+    print("Anomaly Level:", data.get("anomaly_level"))
     print()
 
 def run_tests():

@@ -1,4 +1,12 @@
-import time
+import typing
+import time # Added time here if needed
+# Python 3.13 Compatibility Patch for Pydantic v1 / FastAPI
+if hasattr(typing, 'ForwardRef'):
+    _old_evaluate = typing.ForwardRef._evaluate
+    def _new_evaluate(self, globalns, localns, recursive_guard=None):
+        return _old_evaluate(self, globalns, localns, recursive_guard=recursive_guard)
+    typing.ForwardRef._evaluate = _new_evaluate
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.transaction import router as transaction_router
