@@ -53,14 +53,17 @@ def test_fraud_chain_refinement():
     }
     resp = requests.post(f"{BASE_URL}/transaction", json=tx)
     data = resp.json()
+    # Verify Fraud Chain detection
     print(f"Anomaly Level: {data['anomaly_level']}, Anomaly Score: {data['anomaly_score']}")
     print(f"Risk Score: {data['risk_score']}")
     print(f"Fraud Chain Detected: {data['fraud_chain_detected']}")
     
-    # Anomaly level should be Medium or High for 50k vs 10
     assert data["fraud_chain_detected"] is True
-    assert "Suspicious login followed by anomalous transaction" in data["reasons"]
-    print("✅ Fraud Chain Refinement Verified")
+    # Updated assertion for structured reasons
+    reason_messages = [r["message"] for r in data["reasons"]]
+    assert any("Suspicious login followed by anomalous transaction" in m for m in reason_messages)
+    assert data["risk_score"] >= 70
+    print("✅ Fraud Chain Verified")
 
 def test_min_risk_floor():
     print("\n--- [TEST 3] Minimum Risk Floor (MEDIUM >= 25, HIGH >= 50) ---")

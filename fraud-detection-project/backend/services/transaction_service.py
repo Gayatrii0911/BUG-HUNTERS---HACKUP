@@ -94,7 +94,7 @@ def process_transaction(tx: dict) -> dict:
 
     # If fraud chain detected, add specifically to categories
     if decision.get("fraud_chain_detected"):
-        chain_msg = "Suspicious login followed by anomalous transaction (possible account takeover)"
+        chain_msg = {"message": "Suspicious login followed by anomalous transaction (possible account takeover)", "type": "fraud_chain"}
         if chain_msg not in reason_categories["fraud_chain"]:
             reason_categories["fraud_chain"].append(chain_msg)
             reasons.append(chain_msg)
@@ -136,4 +136,5 @@ def process_transaction(tx: dict) -> dict:
         "fraud_chain_detected": decision.get("fraud_chain_detected", False),
         "is_pre_transaction_check": True,
         "alert": risk_result["risk_score"] >= 40,
+        "alert_id": alert.get("alert_id") if risk_result["risk_score"] >= 40 else "N/A"
     }
