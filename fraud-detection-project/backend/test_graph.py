@@ -51,7 +51,7 @@ def run_case_d():
     
     graph = get_graph()
     trace = trace_funds(graph, "A")
-    suspicious, paths = detect_suspicious_chain(trace, min_length=4)
+    suspicious, paths = detect_suspicious_chain(graph, trace, min_length=4)
     print(f"Suspicious Chain: {suspicious} (Expected: True/False depending on logic)")
     print(f"Paths: {paths}")
     

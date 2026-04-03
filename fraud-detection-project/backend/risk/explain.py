@@ -1,31 +1,36 @@
-def generate_reasons(graph_result: dict, ml_result: dict, risk_score: float) -> list:
+from typing import Dict, Any, List
+
+def generate_explanation(
+    deviations: Dict[str, Any],
+    device_info: Dict[str, Any],
+    graph_signals: Dict[str, Any],
+    anomaly_score: float,
+    components: Dict[str, float],
+) -> List[str]:
     reasons = []
 
-    if graph_result.get("cycle"):
-        reasons.append("Cycle detected in transaction graph")
-    if graph_result.get("rapid_chain"):
-        reasons.append("Rapid chain of transactions detected")
-    connections = graph_result.get("connections", 0)
-    if connections > 5:
-        reasons.append(f"Account has unusually high connections ({connections})")
-    elif connections > 2:
-        reasons.append(f"Account connected to multiple accounts ({connections})")
-
-    anomaly = ml_result.get("anomaly_score", 0)
-    if anomaly > 0.8:
-        reasons.append("High anomaly score detected")
-    elif anomaly > 0.5:
-        reasons.append("Moderate anomaly in transaction pattern")
-
-    if not ml_result.get("device_known", True):
-        reasons.append("Transaction from unrecognized device")
-    if not ml_result.get("location_known", True):
-        reasons.append("Transaction from unusual location")
-
-    for r in ml_result.get("behavior_reasons", []):
-        reasons.append(r)
+    if deviations.get("amount_deviation", 0) > 2.5:
+        reasons.append(f"Transaction amount is {deviations['amount_deviation']:.1f} standard deviations above user average")
+    if deviations.get("new_receiver"):
+        reasons.append("First transaction to this recipient")
+    if deviations.get("new_device"):
+        reasons.append("Transaction initiated from an unrecognized device")
+    if deviations.get("new_location"):
+        reasons.append("New geographic location detected")
+    if deviations.get("frequency_spike"):
+        reasons.append("Unusual transaction frequency for this user")
+    if device_info.get("impossible_travel"):
+        reasons.append("Device appears in a different location than expected (impossible travel)")
+    if device_info.get("suspicious_channel"):
+        reasons.append("Transaction routed through anonymizing network (VPN/Tor/proxy)")
+    if graph_signals.get("has_cycle"):
+        reasons.append("Cyclic fund flow detected in transaction graph")
+    if graph_signals.get("suspicious_connections"):
+        reasons.append("Account linked to flagged entities in the network")
+    if anomaly_score > 0.7:
+        reasons.append(f"ML anomaly detector flagged this transaction (score: {anomaly_score:.2f})")
 
     if not reasons:
-        reasons.append("Transaction appears normal")
+        reasons.append("No significant risk indicators detected")
 
     return reasons

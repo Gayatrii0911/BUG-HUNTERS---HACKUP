@@ -1,31 +1,50 @@
-def calculate_final_risk(graph_result: dict, ml_result: dict) -> float:
-    score = 0.0
+from typing import Dict, Any
 
-    # Graph signals
-    if graph_result.get("cycle"):
-        score += 40
-    if graph_result.get("rapid_chain"):
-        score += 20
-    connections = graph_result.get("connections", 0)
-    if connections > 5:
-        score += 15
-    elif connections > 2:
-        score += 5
-    score += graph_result.get("graph_risk", 0) * 0.3
+def compute_risk_score(
+    graph_signals: Dict[str, Any],
+    anomaly_score: float,
+    deviations: Dict[str, Any],
+    device_info: Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    Combines all signals into a final 0–100 risk score.
+    Weights:
+      - Graph signals  : 35%
+      - ML anomaly     : 30%
+      - Behavior       : 25%
+      - Device         : 10%
+    """
+    graph_score = _graph_to_score(graph_signals)
+    behavior_score = deviations.get("deviation_score", 0.0)
+    device_score = device_info.get("device_risk", 0.0)
 
-    # ML + behavior signals
-    score += ml_result.get("behavior_risk", 0) * 0.4
-    score += ml_result.get("ml_risk", 0) * 0.3
-    anomaly = ml_result.get("anomaly_score", 0)
-    if anomaly > 0.8:
-        score += 20
-    elif anomaly > 0.5:
-        score += 10
+    combined = (
+        graph_score * 0.35 +
+        anomaly_score * 0.30 +
+        behavior_score * 0.25 +
+        device_score * 0.10
+    )
+    final = round(combined * 100, 1)
 
-    # Device/location
-    if not ml_result.get("device_known", True):
-        score += 10
-    if not ml_result.get("location_known", True):
-        score += 5
+    return {
+        "risk_score": final,
+        "components": {
+            "graph": round(graph_score * 100, 1),
+            "anomaly_ml": round(anomaly_score * 100, 1),
+            "behavior": round(behavior_score * 100, 1),
+            "device": round(device_score * 100, 1),
+        }
+    }
 
-    return round(min(score, 100), 2)
+def _graph_to_score(signals: Dict[str, Any]) -> float:
+    """Convert Member 1's graph signals dict to a 0–1 score."""
+    if not signals:
+        return 0.0
+    flags = []
+    flags.append(signals.get("has_cycle", False))
+    flags.append(signals.get("suspicious_connections", False))
+    flags.append(signals.get("rapid_transactions", False))
+    raw = signals.get("score", 0)
+    normalized = min(1.0, raw / 100.0) if isinstance(raw, (int, float)) else 0.0
+    flag_score = sum(flags) / max(len(flags), 1)
+    return round((normalized + flag_score) / 2, 3)

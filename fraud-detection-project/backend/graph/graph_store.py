@@ -1,7 +1,5 @@
-
-
-
 import networkx as nx
+graph = nx.MultiDiGraph()
 
 _graph = nx.DiGraph()
 

@@ -22,11 +22,24 @@ def trace_account(account: str, max_depth: int = 4):
     from backend.graph.formatter import build_subgraph_for_account
     graph_payload = build_subgraph_for_account(graph, account, depth=max_depth)
 
+    # trace summarization
+    paths = result["paths"]
+    max_path_length = max([len(p) for p in paths]) if paths else 0
+    suspicious_paths = [p for p in paths if len(p) >= 4]
+    
+    # gather all unique accounts in the trace
+    related_accounts = set()
+    for p in paths:
+        related_accounts.update(p)
+
     return {
         "status": "success",
         "account": result["account"],
-        "paths": result["paths"],
-        "path_count": len(result["paths"]),
+        "paths": paths,
+        "path_count": len(paths),
+        "max_path_length": max_path_length,
+        "suspicious_paths": suspicious_paths,
+        "related_accounts_summary": list(related_accounts),
         "max_depth": max_depth,
         "graph_payload": graph_payload
     }
