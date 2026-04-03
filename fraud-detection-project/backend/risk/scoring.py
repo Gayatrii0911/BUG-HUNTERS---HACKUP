@@ -15,8 +15,8 @@ def compute_risk_score(
     - Synthetic Identity penalty (+20 for shared hardware)
     - Coordinated Fraud boost (+15 for Graph + ML agreement)
     """
-    # 1. Normalize Graph Risk (Cap at 0.4 as per calibration)
-    graph_score = min(0.4, _graph_to_score(graph_signals))
+    # 1. Normalize Graph Risk
+    graph_score = _graph_to_score(graph_signals)
     behavior_score = deviations.get("deviation_score", 0.0)
     device_score = device_info.get("device_risk", 0.0)
 
@@ -31,8 +31,8 @@ def compute_risk_score(
     final_score = weighted_sum * 100
 
     # 2. Combined Intelligence Boost (Coordinated Fraud)
-    if graph_score > 0.6 and anomaly_score > 0.6:
-        final_score += 15
+    if graph_score >= 0.5 and anomaly_score >= 0.5:
+        final_score += 30
         
     # 4. Synthetic Identity Check
     if identity_signals and identity_signals.get("identity_count", 0) >= 3:
