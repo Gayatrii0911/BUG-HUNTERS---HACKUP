@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from backend.behavior.profile_store import get_profile, get_device_users
-from backend.graph.builder import get_graph
+from backend.graph.graph_store import get_graph
 from backend.graph.algorithms import get_connections
 
 router = APIRouter(prefix="/account")

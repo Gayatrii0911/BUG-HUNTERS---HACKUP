@@ -6,13 +6,13 @@ def run_scenario(name: str):
     Executes a specific fraud scenario through the real real-time pipeline.
     """
     scenarios = {
-        "normal_user": [
+        "normal": [
             {"sender_id": "User_01", "receiver_id": "Amazon", "amount": 1500, "location": "Noida", "device_id": "D_NORM"}
         ],
-        "new_device_anomaly": [
-            {"sender_id": "User_01", "receiver_id": "GamerStore", "amount": 15000, "location": "Bangalore", "device_id": "D_NEW"}
+        "cold_start": [
+             {"sender_id": "NEW_USER_STRESS", "receiver_id": "U2", "amount": 1500, "location": "Delhi"}
         ],
-        "cycle_fraud": [
+        "fractal_cycle": [
             {"sender_id": "RingA", "receiver_id": "RingB", "amount": 1000},
             {"sender_id": "RingB", "receiver_id": "RingC", "amount": 1000},
             {"sender_id": "RingC", "receiver_id": "RingA", "amount": 1000}
@@ -28,7 +28,7 @@ def run_scenario(name: str):
             {"sender_id": "L4", "receiver_id": "Offshore", "amount": 5000}
         ],
         "smurfing": [
-            {"sender_id": "Smurf", "receiver_id": "Recipient", "amount": 50} for _ in range(5)
+            {"sender_id": "Smurf", "receiver_id": "Recipient", "amount": 50, "device_id": "S_DEV"} for _ in range(5)
         ],
         "account_takeover": [
             {"sender_id": "Victim", "receiver_id": "Merchant", "amount": 500, "device_id": "V_DEV"},

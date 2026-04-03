@@ -74,7 +74,8 @@ def generate_explanation(
 
     # 4. Graph Reasons (Elite Detailed Signals)
     if graph_signals.get("has_cycle"):
-        msg = "Cycle detected in transaction flow (Possible layering flow)"
+        path_str = " -> ".join(graph_signals.get("cycle_path", []))
+        msg = f"Cycle detected in transaction flow: {path_str} (High risk of self-cycling/layering)"
         categories["graph"].append({"message": msg, "type": "graph"})
     
     if graph_signals.get("is_hub"):
@@ -82,11 +83,16 @@ def generate_explanation(
         categories["graph"].append({"message": msg, "type": "graph"})
 
     if graph_signals.get("suspicious_chain"):
-        msg = "Money laundering chain detected (Multi-hop layering flow)"
+        chains = graph_signals.get("chain_paths", [])
+        if chains:
+            path_str = " -> ".join(chains[0])
+            msg = f"Money laundering chain detected (Multi-hop flow: {path_str})"
+        else:
+            msg = "Suspicious multi-hop fund layering detected"
         categories["graph"].append({"message": msg, "type": "graph"})
 
     if graph_signals.get("is_smurfing"):
-        msg = "Structuring detected (Multiple rapid small transactions)"
+        msg = "Structuring detected (Multiple rapid small transactions between nodes)"
         categories["graph"].append({"message": msg, "type": "graph"})
         
     if graph_signals.get("is_cluster"):

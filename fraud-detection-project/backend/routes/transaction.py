@@ -5,12 +5,12 @@ from backend.schemas.transaction import TransactionRequest, TransactionResponse
 router = APIRouter()
 
 @router.post("/transaction", response_model=TransactionResponse)
-def create_transaction(data: TransactionRequest):
+async def create_transaction(item: TransactionRequest):
     """
     Real-time transaction scoring endpoint (Elite).
     Synchronously processes Graph, ML, and Behavioral intelligence.
     Returns: A complete Section 9 compliant decision object.
     """
-    # data.dict() handles the conversion from Pydantic model to a raw dict
-    result = process_transaction(data.dict())
+    # item.dict() handles the conversion from Pydantic model to a raw dict
+    result = process_transaction(item.dict())
     return result

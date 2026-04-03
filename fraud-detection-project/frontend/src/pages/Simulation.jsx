@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Send, RefreshCw, ShieldAlert, CheckCircle, Info, Zap } from 'lucide-react';
+import { Play, Send, RefreshCw, ShieldAlert, CheckCircle, Info, Zap, Network, Activity } from 'lucide-react';
 import { processTransaction, runScenario } from '../services/api';
 import RiskGauge from '../components/RiskGauge';
 import DecisionBadge from '../components/DecisionBadge';
@@ -50,10 +50,13 @@ export default function Simulation() {
   };
 
   const scenarios = [
-    { name: 'normal', label: 'Baseline Activity', color: 'bg-cyber-success', icon: <CheckCircle className="w-4 h-4" /> },
-    { name: 'mule_hub', label: 'Network Smurfing', color: 'bg-cyber-warning', icon: <RefreshCw className="w-4 h-4" /> },
-    { name: 'account_takeover', label: 'Identity Hijack', color: 'bg-cyber-danger', icon: <ShieldAlert className="w-4 h-4" /> },
-    { name: 'money_laundering', label: 'Circular Ring', color: 'bg-cyber-purple', icon: <Zap className="w-4 h-4" /> }
+    { name: 'normal', label: 'Baseline (Scenario 1)', color: 'bg-cyber-success', icon: <CheckCircle className="w-4 h-4" /> },
+    { name: 'cold_start', label: 'Cold Start (Scenario 2)', color: 'bg-cyber-accent', icon: <Info className="w-4 h-4" /> },
+    { name: 'fractal_cycle', label: 'Cycle Fraud (Scenario 3)', color: 'bg-cyber-danger', icon: <RefreshCw className="w-4 h-4" /> },
+    { name: 'mule_hub', label: 'Hub Intelligence (Scenario 4)', color: 'bg-cyber-warning', icon: <Zap className="w-4 h-4" /> },
+    { name: 'layering_chain', label: 'Layering Chain (Scenario 5)', color: 'bg-cyber-purple', icon: <Network className="w-4 h-4" /> },
+    { name: 'smurfing', label: 'Smurfing Attack (Elite)', color: 'bg-cyber-danger', icon: <Activity className="w-4 h-4" /> },
+    { name: 'account_takeover', label: 'Identity Hijack (Elite)', color: 'bg-cyber-danger', icon: <ShieldAlert className="w-4 h-4" /> }
   ];
 
   return (

@@ -1,6 +1,6 @@
 import networkx as nx
 import time
-from backend.graph.builder import get_graph
+from backend.graph.graph_store import get_graph
 
 # -------------------------------
 # 1. CYCLE DETECTION
@@ -96,38 +96,52 @@ def get_connections(graph, account: str):
 def generate_signals(from_account: str, to_account: str, amount: float):
     g = get_graph()
     
-    has_cycle, _ = detect_cycle(g, from_account)
-    connections = get_connections(g, from_account)
-    is_hub = connections >= 5
+    # Temporarily add current edge to graph for "look-ahead" cycle/hub/chain detection
+    # This ensures the current transaction's impact on topology is analyzed in real-time
+    temp_edge_key = g.add_edge(from_account, to_account, amount=amount, timestamp=time.time())
     
-    trace_res = trace_funds(g, from_account)
-    paths = trace_res["paths"]
-    
-    long_chain = any(len(p) >= 4 for p in paths)
-    high_velocity = any(analyze_path_velocity(g, p) for p in paths)
-    
-    is_smurfing = detect_smurfing(g, from_account, to_account)
-    is_cluster = detect_dense_cluster(g, from_account)
-    
-    graph_score = 0
-    
-    if has_cycle: graph_score += 40
-    if high_velocity: graph_score += 25
-    elif long_chain: graph_score += 15
+    try:
+        has_cycle, cycle_path = detect_cycle(g, from_account)
+        connections = get_connections(g, from_account)
+        is_hub = connections >= 5
         
-    if is_hub: graph_score += 20
-    if is_smurfing: graph_score += 15
-    if is_cluster: graph_score += 10
-
-    return {
-        "signals": {
-            "has_cycle": has_cycle,
-            "is_hub": is_hub,
-            "suspicious_chain": long_chain or high_velocity,
-            "is_smurfing": is_smurfing,
-            "is_cluster": is_cluster,
-            "score": min(100, graph_score),
-            "graph_risk": graph_score,
-            "connections": connections
+        # Comprehensive Chain Detection: Trace from current account and its immediate ancestors
+        all_paths = []
+        # Successor paths (forward)
+        all_paths.extend(trace_funds(g, from_account, max_depth=4)["paths"])
+        # Ancestor paths (backward check)
+        for ancestor in g.predecessors(from_account):
+            all_paths.extend(trace_funds(g, ancestor, max_depth=5)["paths"])
+            
+        long_paths = [p for p in all_paths if len(p) >= 4]
+        long_chain = len(long_paths) > 0
+        high_velocity = any(analyze_path_velocity(g, p) for p in all_paths)
+        
+        is_smurfing = detect_smurfing(g, from_account, to_account)
+        is_cluster = detect_dense_cluster(g, from_account)
+    finally:
+        # 4. Final Aggregation (Calibrated weights)
+        graph_score = 0
+        if has_cycle: graph_score += 40
+        if is_hub: graph_score += 20
+        if long_chain: graph_score += 25
+        if is_smurfing: graph_score += 15
+        if is_cluster: graph_score += 15
+        
+        # ALWAYS remove the temp edge so it doesn't double-count when add_transaction is called later
+        g.remove_edge(from_account, to_account, key=temp_edge_key)
+        
+        return {
+            "signals": {
+                "has_cycle": has_cycle,
+                "cycle_path": cycle_path,
+                "is_hub": is_hub,
+                "suspicious_chain": long_chain or high_velocity,
+                "chain_paths": long_paths[:2], # Limit to 2 for brevity
+                "is_smurfing": is_smurfing,
+                "is_cluster": is_cluster,
+                "score": min(100, graph_score),
+                "graph_risk": min(100, graph_score), # double key for safety
+                "connections": connections
+            }
         }
-    }

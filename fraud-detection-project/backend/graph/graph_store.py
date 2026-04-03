@@ -34,3 +34,14 @@ def add_transaction(from_account: str, to_account: str, amount: float, timestamp
         transaction_id=transaction_id, 
         decision=decision
     )
+
+def save_snapshot() -> dict:
+    """Export current graph for persistence or replay."""
+    return nx.node_link_data(graph)
+
+def load_snapshot(data: dict):
+    """Restore graph from external state."""
+    global graph
+    graph.clear()
+    graph = nx.node_link_graph(data)
+    print("SENTINEL-X GRAPH STORAGE RESTORED FROM SNAPSHOT")

@@ -41,11 +41,23 @@ class FraudEnsemble:
         self.is_trained = True
 
     def predict(self, features: List[float]) -> float:
+        if not self.is_trained:
+            self.bootstrap()
+            
         arr = np.array(features).reshape(1, -1)
+        
         # Unsupervised Outlier Score
-        iso_score = self.iso_forest.decision_function(arr)[0]
+        iso_score = 0.0
+        if hasattr(self, 'iso_forest'):
+            iso_score = self.iso_forest.decision_function(arr)[0]
+        
         # Supervised Classification Prob
-        rf_prob = self.rf.predict_proba(arr)[0][1]
+        rf_prob = 0.0
+        if hasattr(self, 'rf'):
+            try:
+                rf_prob = self.rf.predict_proba(arr)[0][1]
+            except Exception:
+                rf_prob = 0.5 # Fallback if training state is weird
         
         # Fusing: High RF prob or Low Iso score = High Anomaly
         # Iso score: ~0.15 is normal, <0 is outlier
