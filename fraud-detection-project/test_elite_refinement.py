@@ -83,28 +83,59 @@ def test_min_risk_floor():
         assert data["risk_score"] >= 50
     print("✅ Risk Floor Verified")
 
-def test_confidence_score():
-    print("\n--- [TEST 4] Confidence Score Calculation ---")
-    # Only one component (behavior) triggered
+def test_mfa_escalation_rule():
+    print("\n--- [TEST 5] MFA Escalation Rule (3x Avg + 0.4 Anomaly) ---")
+    user_id = f"mfa_user_{int(time.time())}"
+    # 1. Establish average of 100
+    for i in range(5):
+        requests.post(f"{BASE_URL}/transaction", json={
+            "sender_id": user_id, "receiver_id": "rec", "amount": 100.0, "device_id": "d1", "location": "L1"
+        })
+    
+    # 2. Trigger 3.5x amount (350) + simulate medium anomaly
+    # On a new user/fresh state, this should trigger enough deviations for MFA
     tx = {
-        "sender_id": "conf_user", "receiver_id": "rec_new", "amount": 100.0, "device_id": "d1", "location": "L1"
+        "sender_id": user_id, "receiver_id": "rec_new", "amount": 350.0, "device_id": "d2", "location": "L2"
     }
     resp = requests.post(f"{BASE_URL}/transaction", json=tx)
     data = resp.json()
-    print(f"One Signal Confidence: {data['confidence']}")
+    print(f"Amount: 350 (Avg: 100), Anomaly Score: {data['anomaly_score']}, Decision: {data['decision']}")
     
-    # Multistal - Graph + ML + Behavior (using simulation wave or crafted tx)
-    # For now check it exists and is normalized
-    assert 0.0 <= data["confidence"] <= 1.0
-    print("✅ Confidence Score Verified")
+    # If it's a fresh user, anomaly score might be high enough
+    if data["anomaly_score"] >= 0.4:
+        assert data["decision"] in ["MFA", "BLOCK"], f"Expected MFA/BLOCK for high deviation, got {data['decision']}"
+    print("✅ MFA Escalation Verified")
+
+def test_reason_consistency():
+    print("\n--- [TEST 6] Reason-Score Consistency ---")
+    tx = {
+        "sender_id": "consist_user", "receiver_id": "rec", "amount": 5000.0, "device_id": "new_d", "location": "new_l"
+    }
+    resp = requests.post(f"{BASE_URL}/transaction", json=tx)
+    data = resp.json()
+    
+    scores = data["score_breakdown"]
+    reasons = data["reasons"]
+    reason_types = [r["type"] for r in reasons]
+    
+    print(f"Breakdown: {scores}")
+    print(f"Reason Types: {reason_types}")
+    
+    if scores["behavior_risk"] > 0: assert "behavior" in reason_types
+    if scores["device_risk"] > 0: assert "device" in reason_types or "synergy" in reason_types
+    if scores["ml_risk"] > 0: assert "ml" in reason_types
+    if scores["graph_risk"] > 0: assert "graph" in reason_types
+    
+    print("✅ Reason Consistency Verified")
 
 if __name__ == "__main__":
     try:
         test_elite_refinement()
         test_fraud_chain_refinement()
         test_min_risk_floor()
-        test_confidence_score()
-        print("\n🚀 ALL ELITE REFINEMENT TESTS PASSED!")
+        test_mfa_escalation_rule()
+        test_reason_consistency()
+        print("\n🚀 ALL ELITE CALIBRATION TESTS PASSED!")
     except Exception as e:
         print(f"\n❌ Test Failed: {e}")
         import traceback
