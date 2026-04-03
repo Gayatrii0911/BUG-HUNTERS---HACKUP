@@ -28,10 +28,28 @@ def score_transaction(features: List[float]) -> float:
     """Returns anomaly score from 0.0 (normal) to 1.0 (highly anomalous)."""
     model = _get_model()
     arr = np.array(features).reshape(1, -1)
-    raw = model.decision_function(arr)[0]  # negative = anomalous
-    # Normalize: typical range is [-0.5, 0.5], map to [0, 1] inverted
-    normalized = max(0.0, min(1.0, (0.5 - raw)))
-    return round(float(normalized), 3)
+    
+    # IsolationForest.decision_function:
+    # Typical range is ~[0.2, -0.2]. Outliers are lower.
+    raw = model.decision_function(arr)[0]
+    
+    # Shifted and Scaled Normalization for Elite Demo:
+    # We want outliers (any raw score significantly lower than the mean)
+    # to hit the High/Medium thresholds (> 0.5).
+    # Assuming average normal score is around 0.15.
+    
+    if raw < -0.01:
+        # High outlier probability
+        normalized = 0.7 + abs(raw) * 2
+    elif raw < 0.1:
+        # Medium outlier/suspicious
+        normalized = 0.5 + (0.1 - raw)
+    else:
+        # Normal
+        normalized = max(0.0, (0.2 - raw) * 2)
+        
+    final = round(float(min(1.0, normalized)), 3)
+    return final
 
 def retrain(all_features: List[List[float]]):
     """Adaptive retraining — call this when new labeled data arrives."""

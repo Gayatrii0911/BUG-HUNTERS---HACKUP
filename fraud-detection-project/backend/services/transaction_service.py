@@ -38,7 +38,7 @@ def process_transaction(tx: dict) -> dict:
     features = extract_features(tx, deviations, device_info)
     anomaly_score = score_transaction(features)
 
-    # 1. Compute Scored Result (Categorized & Escalated)
+    # 1. Base Scored Result
     risk_result = compute_risk_score(
         graph_signals, 
         anomaly_score, 
@@ -47,28 +47,50 @@ def process_transaction(tx: dict) -> dict:
         profile["recent_risk_scores"]
     )
     
-    # 2. Decision Logic (Chain Detection)
+    # 2. Decision Logic (Initial)
     decision = make_decision(
         risk_result["risk_score"], 
         deviations, 
         device_info, 
-        risk_result["anomaly_level"]
+        risk_result
     )
     
-    # 3. Explainability (Human-Readable)
-    reasons = generate_explanation(
+    # 3. Fraud Chain Boost (Refined Scoring)
+    # If fraud chain detected, boost the final risk score by +20
+    final_risk_score = risk_result["risk_score"]
+    if decision.get("fraud_chain_detected"):
+        final_risk_score = min(100.0, final_risk_score + 20.0)
+        risk_result["risk_score"] = final_risk_score
+        # Re-get the level based on boosted score
+        from backend.risk.scoring import _get_risk_level
+        risk_result["risk_level"] = _get_risk_level(final_risk_score)
+        # Recalculate decision with new score
+        decision = make_decision(final_risk_score, deviations, device_info, risk_result)
+
+    # 4. Structured Explainability
+    explanation_result = generate_explanation(
         deviations, 
         device_info, 
         graph_signals, 
         risk_result, 
         profile["recent_risk_scores"]
     )
+    
+    reasons = explanation_result["reasons"]
+    reason_categories = explanation_result["categories"]
+
+    # If fraud chain detected, add custom reason to the category
+    if decision.get("fraud_chain_detected"):
+        chain_msg = "Suspicious login followed by anomalous transaction (possible account takeover)"
+        if chain_msg not in reason_categories["fraud_chain"]:
+            reason_categories["fraud_chain"].append(chain_msg)
+            reasons.append(chain_msg)
 
     alert = generate_and_store_alert(tx, decision, reasons)
     
-    # Update behavioral profile (including risk history)
+    # Update behavioral profile
     update_user_profile(tx)
-    profile["recent_risk_scores"].append(risk_result["risk_score"])
+    profile["recent_risk_scores"].append(final_risk_score)
     if len(profile["recent_risk_scores"]) > 5:
         profile["recent_risk_scores"].pop(0)
 
@@ -88,18 +110,19 @@ def process_transaction(tx: dict) -> dict:
     except Exception as e:
         print(f"Post-processing error: {e}")
 
-    # ELITE RESPONSE STRUCTURE
+    # STRICT FINAL OUTPUT FORMAT
     return {
         "transaction_id": tx["transaction_id"],
         "risk_score": risk_result["risk_score"],
         "risk_level": risk_result["risk_level"],
         "decision": decision["action"],
         "reasons": reasons,
+        "reason_categories": reason_categories,
         "score_breakdown": risk_result["components"],
         "anomaly_score": risk_result["anomaly_score"],
         "anomaly_level": risk_result["anomaly_level"],
+        "confidence": risk_result["confidence"],
         "fraud_chain_detected": decision.get("fraud_chain_detected", False),
         "is_pre_transaction_check": True,
         "alert": risk_result["risk_score"] >= 40,
-        "alert_id": alert["alert_id"]
     }
