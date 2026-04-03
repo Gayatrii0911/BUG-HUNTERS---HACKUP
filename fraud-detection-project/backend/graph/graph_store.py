@@ -1,12 +1,13 @@
+
+
+
 import networkx as nx
 
-# Single shared graph instance for entire backend
-graph = nx.MultiDiGraph()
+_graph = nx.DiGraph()
 
-
-def get_graph():
-    return graph
-
+def get_graph() -> nx.DiGraph:
+    return _graph
 
 def reset_graph():
-    graph.clear()
+    global _graph
+    _graph = nx.DiGraph()
