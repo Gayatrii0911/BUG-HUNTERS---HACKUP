@@ -94,6 +94,17 @@ def generate_explanation(
         msg = "Repeated suspicious activity detected in recent transactions"
         categories["fraud_chain"].append({"message": msg, "type": "fraud_chain"})
 
+    # 6. Consistency Calibration: Ensure every contributing component has a reason
+    scores = risk_result.get("components", {})
+    if scores.get("behavior_risk", 0) > 0 and not categories["behavior"]:
+        categories["behavior"].append({"message": "Non-standard behavioral patterns identified", "type": "behavior"})
+    if scores.get("device_risk", 0) > 0 and not categories["device"]:
+        categories["device"].append({"message": "Unusual hardware or connection metadata detected", "type": "device"})
+    if scores.get("ml_risk", 0) > 0 and not categories["ml"]:
+        categories["ml"].append({"message": "AI model identified subtle anomalous features", "type": "ml"})
+    if scores.get("graph_risk", 0) > 0 and not categories["graph"]:
+        categories["graph"].append({"message": "Anomalous fund flow relationships identified", "type": "graph"})
+
     # Flatten all reasons
     all_reasons = []
     for cat_list in categories.values():
