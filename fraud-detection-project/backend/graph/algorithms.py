@@ -36,12 +36,16 @@ def detect_cycle(graph, from_account: str = None, to_account: str = None):
 # -------------------------------
 def get_connections(graph, account: str):
     """
-    Returns number of unique outgoing connections from an account.
+    Returns total, incoming, and outgoing connections from an account.
+    We just return outgoing for backward compatibility if an int is expected,
+    but let's return total unique connected nodes to accurately represent a Hub.
     """
     if account not in graph:
         return 0
 
-    return len(set(graph.successors(account)))
+    in_nodes = set(graph.predecessors(account))
+    out_nodes = set(graph.successors(account))
+    return len(in_nodes.union(out_nodes))
 
 
 # -------------------------------
@@ -102,9 +106,17 @@ def trace_funds(graph, account: str, max_depth: int = 4):
 # -------------------------------
 def detect_suspicious_chain(trace_result, min_length: int = 4):
     """
-    Detect whether there is at least one long transaction path.
+    Detect whether there is at least one transaction path that reaches or 
+    exceeds min_length hops, indicating a potential money-laundering chain.
     """
+    if "paths" not in trace_result:
+        return False, []
+        
     long_paths = [p for p in trace_result["paths"] if len(p) >= min_length]
+    
+    # Optionally, we can check rapid hops here if timestamps are in paths,
+    # but based on current trace dict, paths are just lists of nodes.
+    # The existence of a long path directly from trace_funds is our chain signal.
     return len(long_paths) >= 1, long_paths
 
 
@@ -128,6 +140,17 @@ def build_graph_signals(graph, from_account: str, to_account: str, amount: float
     if is_hub:
         suspicious_chain = False
 
+    # Calculate graph_risk
+    graph_risk = 0
+    if cycle:
+        graph_risk += 40
+    if is_hub:
+        graph_risk += 20
+    if suspicious_chain:
+        graph_risk += 20
+    if high_frequency:
+        graph_risk += 20
+
     signals = {
         "cycle": cycle,
         "cycle_path": cycle_path,
@@ -136,7 +159,8 @@ def build_graph_signals(graph, from_account: str, to_account: str, amount: float
         "connections": connections,
         "suspicious_chain": suspicious_chain,
         "long_paths": long_paths,
-        "amount": amount
+        "amount": amount,
+        "graph_risk": graph_risk
     }
 
     return signals
