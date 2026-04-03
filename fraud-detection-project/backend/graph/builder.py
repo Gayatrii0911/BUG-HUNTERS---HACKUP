@@ -1,5 +1,4 @@
 import networkx as nx
-from datetime import datetime
 import time
 
 graph = nx.MultiDiGraph()
@@ -17,3 +16,21 @@ def get_graph():
 def reset_graph():
     graph.clear()
     print("GRAPH RESET SUCCESSFULLY")
+
+def add_transaction_to_graph(G, tx):
+    # Compatibility shim if needed for other parts of the code
+    from_acc = tx.from_account
+    to_acc = tx.to_account
+    amount = tx.amount
+    timestamp = str(tx.timestamp)
+
+    if not G.has_node(from_acc):
+        G.add_node(from_acc, user_id=tx.user_id)
+    if not G.has_node(to_acc):
+        G.add_node(to_acc)
+
+    if G.has_edge(from_acc, to_acc):
+        G[from_acc][to_acc]["count"] += 1
+        G[from_acc][to_acc]["total_amount"] += amount
+    else:
+        G.add_edge(from_acc, to_acc, amount=amount, timestamp=timestamp, count=1, total_amount=amount)
