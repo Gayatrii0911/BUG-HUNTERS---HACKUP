@@ -15,11 +15,12 @@ def compute_risk_score(
     - Synthetic Identity penalty (+20 for shared hardware)
     - Coordinated Fraud boost (+15 for Graph + ML agreement)
     """
-    graph_score = _graph_to_score(graph_signals)
+    # 1. Normalize Graph Risk (Cap at 0.4 as per calibration)
+    graph_score = min(0.4, _graph_to_score(graph_signals))
     behavior_score = deviations.get("deviation_score", 0.0)
     device_score = device_info.get("device_risk", 0.0)
 
-    # 1. Base Score calculation with refined weights
+    # 2. Base Score calculation with refined weights
     weighted_sum = (
         graph_score * 0.30 +
         anomaly_score * 0.25 +
@@ -29,22 +30,21 @@ def compute_risk_score(
     
     final_score = weighted_sum * 100
 
-    # 2. Combined Intelligence Boost (Coordinated Fraud)
-    if graph_score > 0.6 and anomaly_score > 0.6:
+    # 3. Combined Intelligence Boost (Coordinated Fraud)
+    if graph_score > 0.3 and anomaly_score > 0.6: # adjusted for capped graph
         final_score += 15
         
-    # 3. Synthetic Identity Check (Multi-user hardware fingerprint)
+    # 4. Synthetic Identity Check
     if identity_signals and identity_signals.get("identity_count", 0) >= 3:
-        # High-risk signal: 3+ unique accounts on same literal device
         final_score += 20
 
-    # 4. Risk Escalation (Adaptive History)
+    # 5. Risk Escalation (Adaptive History)
     if recent_scores:
         suspicious_count = len([s for s in recent_scores if s > 50])
         if suspicious_count >= 2:
             final_score += 10
 
-    # 5. Anomaly Level & Minimum Risk Floor
+    # 6. Anomaly Level & Minimum Risk Floor
     if anomaly_score > 0.7:
         anomaly_level = "HIGH"
         final_score = max(final_score, 50.0)
@@ -54,8 +54,12 @@ def compute_risk_score(
     else:
         anomaly_level = "LOW"
 
-    # 6. Confidence Calculation
-    confidence = _calculate_confidence(graph_score, anomaly_score, behavior_score, device_score)
+    # 7. Fraud Chain Pre-calculation for Confidence
+    is_new_access = deviations.get("new_device", False) or deviations.get("new_location", False)
+    fraud_chain = is_new_access and anomaly_score > 0.5
+
+    # 8. Confidence Calculation
+    confidence = _calculate_confidence(graph_score, anomaly_score, behavior_score, device_score, fraud_chain)
 
     final_score = min(100.0, round(final_score, 1))
 
@@ -65,6 +69,7 @@ def compute_risk_score(
         "anomaly_score": round(anomaly_score, 3),
         "anomaly_level": anomaly_level,
         "confidence": round(confidence, 2),
+        "fraud_chain_pre_check": fraud_chain,
         "components": {
             "graph_risk": round(graph_score * 100, 1),
             "ml_risk": round(anomaly_score * 100, 1),
@@ -73,22 +78,26 @@ def compute_risk_score(
         }
     }
 
-def _calculate_confidence(g: float, a: float, b: float, d: float) -> float:
+def _calculate_confidence(g: float, a: float, b: float, d: float, f: bool) -> float:
     """
-    High confidence if multiple high-risk signals agree.
-    Low confidence if only one weak signal is present.
+    Tiered Confidence logic:
+    - 1 signal: 0.3
+    - 2 signals: 0.6
+    - 3+ signals: 0.85-0.95
     """
-    signals = [g, a, b, d]
-    strong_signals = [s for s in signals if s > 0.6]
-    weak_signals = [s for s in signals if 0.2 < s <= 0.6]
+    signals_triggered = 0
+    if g > 0: signals_triggered += 1
+    if a > 0.3: signals_triggered += 1 # ml threshold
+    if b > 0: signals_triggered += 1
+    if d > 0: signals_triggered += 1
+    if f: signals_triggered += 1
     
-    if len(strong_signals) >= 2:
-        return 0.85 + (0.05 * len(strong_signals))
-    if len(strong_signals) == 1 and len(weak_signals) >= 1:
-        return 0.70
-    if len(strong_signals) == 1:
-        return 0.50
-    return 0.30
+    if signals_triggered == 0: return 0.1
+    if signals_triggered == 1: return 0.3
+    if signals_triggered == 2: return 0.6
+    if signals_triggered == 3: return 0.85
+    if signals_triggered == 4: return 0.90
+    return 0.95 # 5 signals
 
 def _get_risk_level(score: float) -> str:
     if score >= 70: return "high"
@@ -97,7 +106,6 @@ def _get_risk_level(score: float) -> str:
 
 def _graph_to_score(signals: Dict[str, Any]) -> float:
     if not signals: return 0.0
-    # Factors: Cycle, Hub, Velocity/Chain, Structuring, Cluster
     flags = [
         signals.get("has_cycle", False),
         signals.get("is_hub", False),
@@ -109,7 +117,6 @@ def _graph_to_score(signals: Dict[str, Any]) -> float:
     normalized = min(1.0, raw / 100.0) if isinstance(raw, (int, float)) else 0.0
     flag_score = sum(flags) / max(len(flags), 1)
     
-    # Check for direct multi-connection signal from Member 1
     connections = signals.get("connections", 0)
     if connections > 0:
         normalized = max(normalized, min(1.0, connections / 10.0))

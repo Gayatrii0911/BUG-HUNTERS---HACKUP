@@ -134,7 +134,9 @@ def process_transaction(tx: dict) -> dict:
         "anomaly_level": risk_result["anomaly_level"],
         "confidence": risk_result["confidence"],
         "fraud_chain_detected": decision.get("fraud_chain_detected", False),
+        "critical_fraud": decision.get("critical_fraud", False),
+        "fraud_type": decision.get("fraud_type", "normal"),
         "is_pre_transaction_check": True,
-        "alert": risk_result["risk_score"] >= 40,
-        "alert_id": alert.get("alert_id") if risk_result["risk_score"] >= 40 else "N/A"
+        "alert": risk_result["risk_score"] >= 40 or decision.get("critical_fraud", False),
+        "alert_id": alert.get("alert_id") if (risk_result["risk_score"] >= 40 or decision.get("critical_fraud", False)) else "N/A"
     }
