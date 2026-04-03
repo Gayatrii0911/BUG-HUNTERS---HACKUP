@@ -1,6 +1,6 @@
 import time
 import uuid
-from backend.graph.builder import add_transaction, get_graph
+from backend.graph.graph_store import add_transaction, get_graph
 from backend.graph.algorithms import generate_signals
 from backend.services.profile_service import get_behavior_analysis, update_user_profile
 from backend.ml.features import extract_features

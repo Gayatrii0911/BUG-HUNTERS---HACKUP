@@ -17,13 +17,15 @@ def execute_scenario(scenario_name: str):
 @router.post("/reset")
 def reset_system():
     """Wipes all databases and graph state for a fresh demo."""
-    from backend.graph.builder import reset_graph
+    from backend.graph.graph_store import reset_graph
     from backend.behavior.profile_store import reset_profiles
     from backend.alerts.store import clear_alerts
+    from backend.behavior.behavioral_analyzer import reset_behavior_engine
     
     reset_graph()
     reset_profiles()
     clear_alerts()
+    reset_behavior_engine()
     reset_all_db()
     
     return {"status": "ok", "message": "All backend states reset"}
