@@ -24,6 +24,11 @@ def get_profile(user_id: str) -> Dict[str, Any]:
 def get_all_profiles() -> Dict[str, Any]:
     return dict(_profiles)
 
+def reset_profiles():
+    """Wipes all behavioral profiles from memory."""
+    _profiles.clear()
+    _device_history.clear()
+
 def get_device_users(device_id: str) -> List[str]:
     """Returns all user IDs associated with a specific hardware fingerprint."""
     return list(_device_history.get(device_id, set()))
