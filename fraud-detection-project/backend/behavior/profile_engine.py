@@ -15,6 +15,7 @@ def compute_deviations(user_id: str, tx: Dict[str, Any]) -> Dict[str, Any]:
         "new_location": False,
         "new_channel": False,
         "time_deviation": False,
+        "self_transfer": user_id == tx.get("receiver_id"),
         "avg_amount": 0.0,
         "current_amount": tx.get("amount", 0.0),
         "deviation_score": 0.0,
@@ -39,10 +40,11 @@ def compute_deviations(user_id: str, tx: Dict[str, Any]) -> Dict[str, Any]:
         # Simplistic spike: if they usually have 1/day but suddenly have 5 in a row
         result["frequency_spike"] = profile["transaction_count"] % 7 == 0
 
-    result["new_receiver"] = tx.get("receiver_id") not in profile["receivers"]
-    result["new_device"] = tx.get("device_id") not in profile["devices"]
-    result["new_location"] = tx.get("location") not in profile["locations"]
-    result["new_channel"] = tx.get("channel") not in profile["channels"]
+    has_history = profile["transaction_count"] > 0
+    result["new_receiver"] = has_history and tx.get("receiver_id") not in profile["receivers"]
+    result["new_device"] = has_history and tx.get("device_id") not in profile["devices"]
+    result["new_location"] = has_history and tx.get("location") not in profile["locations"]
+    result["new_channel"] = has_history and tx.get("channel") not in profile["channels"]
 
     # Time-of-day check
     try:
@@ -55,15 +57,20 @@ def compute_deviations(user_id: str, tx: Dict[str, Any]) -> Dict[str, Any]:
     except:
         pass
 
+    # Extreme Amount Spike (Custom Calibration for Demo)
+    result["extreme_amount"] = tx.get("amount", 0) > 50000
+
     flags = [
-        result["amount_deviation"] > 2.5,
+        result["amount_deviation"] > 2.0,
         result["amount_exceeds_2x"],
+        result["extreme_amount"],
         result["frequency_spike"],
         result["new_receiver"],
         result["new_device"],
         result["new_location"],
         result["new_channel"],
         result["time_deviation"],
+        result["self_transfer"],
     ]
     result["deviation_score"] = round(sum(flags) / len(flags), 3)
     return result

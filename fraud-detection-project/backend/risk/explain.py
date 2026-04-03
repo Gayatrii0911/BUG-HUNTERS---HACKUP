@@ -39,6 +39,10 @@ def generate_explanation(
     if deviations.get("frequency_spike"):
         msg = "Transaction frequency increased significantly (possible smurfing)"
         categories["behavior"].append({"message": msg, "type": "behavior"})
+        
+    if deviations.get("self_transfer"):
+        msg = "Suspicious self-transfer (Sender and Receiver are identical)"
+        categories["behavior"].append({"message": msg, "type": "suspicious"})
 
     # 2. Device/Location Reasons (Including Identity Intelligence)
     if deviations.get("new_device"):
@@ -89,10 +93,21 @@ def generate_explanation(
         msg = "Part of an isolated, highly-active fraud cluster or clique"
         categories["graph"].append({"message": msg, "type": "graph"})
 
-    # 5. Fraud Chain / History
-    if recent_scores and len([s for s in recent_scores if s > 50]) >= 2:
-        msg = "Repeated suspicious activity detected in recent transactions"
-        categories["fraud_chain"].append({"message": msg, "type": "fraud_chain"})
+    # 5. Risk History
+    if recent_scores and len([s for s in recent_scores if s >= 40]) >= 1:
+        msg = "Recent historical risk escalation (repeated suspicious activity)"
+        categories["behavior"].append({"message": msg, "type": "history"})
+
+    # 6. Consistency Calibration: Ensure every contributing component has a reason
+    scores = risk_result.get("components", {})
+    if scores.get("behavior_risk", 0) > 0 and not categories["behavior"]:
+        categories["behavior"].append({"message": "Non-standard behavioral patterns identified", "type": "behavior"})
+    if scores.get("device_risk", 0) > 0 and not categories["device"]:
+        categories["device"].append({"message": "Unusual hardware or connection metadata detected", "type": "device"})
+    if scores.get("ml_risk", 0) > 0 and not categories["ml"]:
+        categories["ml"].append({"message": "AI model identified subtle anomalous features", "type": "ml"})
+    if scores.get("graph_risk", 0) > 0 and not categories["graph"]:
+        categories["graph"].append({"message": "Anomalous fund flow relationships identified", "type": "graph"})
 
     # Flatten all reasons
     all_reasons = []

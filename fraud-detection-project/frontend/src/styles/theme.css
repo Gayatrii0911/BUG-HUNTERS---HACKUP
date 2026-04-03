@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Orca-Inspired Deep Palette */
+  --bg-deep: 240 10% 4%; /* #0a0a0c */
+  --bg-panel: 240 10% 7%; /* #111114 */
+  --bg-card: 240 10% 10%; /* #18181b */
+  
+  --accent-primary: 250 89% 65%; /* Indigo-ish */
+  --accent-secondary: 270 91% 65%; /* Purple-ish */
+  
+  --danger: 0 84% 60%;
+  --warning: 45 93% 47%;
+  --success: 142 70% 45%;
+  
+  --text-dim: 240 5% 45%;
+  --text-muted: 240 5% 65%;
+  --text-bright: 0 0% 98%;
+  
+  --border-muted: 240 6% 15%;
+}
+
+@layer base {
+  body {
+    @apply bg-[hsl(var(--bg-deep))] text-[hsl(var(--text-muted))] font-sans antialiased selection:bg-[hsl(var(--accent-primary)/0.2)];
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+  /* Orca-Style Card */
+  .orca-card {
+    @apply bg-[hsl(var(--bg-card))] border border-[hsl(var(--border-muted))] rounded-[1.2rem] p-6 transition-all duration-300 hover:border-[hsl(var(--accent-primary)/0.3)];
+  }
+
+  /* Metric Card with Gradient Glow */
+  .metric-glass {
+    @apply relative overflow-hidden bg-gradient-to-br from-white/[0.03] to-transparent border border-white/[0.05] rounded-[1rem] p-5;
+  }
+
+  .sidebar-item {
+    @apply flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200;
+  }
+
+  .sidebar-item-active {
+    @apply bg-[hsl(var(--accent-primary)/0.15)] text-[hsl(var(--accent-primary))] shadow-[inset_0_0_12px_rgba(99,102,241,0.05)];
+  }
+
+  /* Tables */
+  .orca-table-row {
+    @apply border-b border-[hsl(var(--border-muted))] hover:bg-white/[0.02] transition-colors;
+  }
+}
+
+.font-display { font-family: 'Outfit', sans-serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { @apply bg-white/5 rounded-full hover:bg-white/10; }

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -12,8 +12,9 @@ export const processTransaction = async (data) => {
 };
 
 export const fetchAlerts = async () => {
-  const response = await api.get('/alerts');
-  return response.data;
+    const response = await api.get('/alerts');
+    const data = response.data;
+    return Array.isArray(data) ? data : (data.alerts || []);
 };
 
 export const fetchTrace = async (accountId) => {
@@ -40,3 +41,7 @@ export const fetchAccountSummary = async (accountId) => {
   const response = await api.get(`/account/${accountId}`);
   return response.data;
 };
+
+// Aliases for Consistency
+export const fetchGraph = fetchTrace;
+export const fetchAccount = fetchAccountSummary;
