@@ -93,10 +93,10 @@ def generate_explanation(
         msg = "Part of an isolated, highly-active fraud cluster or clique"
         categories["graph"].append({"message": msg, "type": "graph"})
 
-    # 5. Fraud Chain / History
-    if recent_scores and len([s for s in recent_scores if s > 50]) >= 2:
-        msg = "Repeated suspicious activity detected in recent transactions"
-        categories["fraud_chain"].append({"message": msg, "type": "fraud_chain"})
+    # 5. Risk History
+    if recent_scores and len([s for s in recent_scores if s >= 40]) >= 1:
+        msg = "Recent historical risk escalation (repeated suspicious activity)"
+        categories["behavior"].append({"message": msg, "type": "history"})
 
     # 6. Consistency Calibration: Ensure every contributing component has a reason
     scores = risk_result.get("components", {})

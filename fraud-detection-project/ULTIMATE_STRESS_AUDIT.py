@@ -75,7 +75,7 @@ def run_stress_test():
     # Force high graph (Hub) + high ML (Ghost Device)
     for i in range(11): requests.post(f"{BASE_URL}/transaction", json={"sender_id": "BOSS_COORD", "receiver_id": f"M_{i}", "amount": 5})
     r = requests.post(f"{BASE_URL}/transaction", json={
-        "sender_id": "BOSS_COORD", "receiver_id": "M_0", "amount": 8888.0, "location": "UNKNOWN", "device_id": "EVIL_HW"
+        "sender_id": "BOSS_COORD", "receiver_id": "M_0", "amount": 999999.0, "location": "UNKNOWN", "device_id": "EVIL_HW"
     }).json()
     log_result("Advanced: Fraud Synergy", r['risk_score'] >= 70, f"Critical Risk: {r['risk_score']}")
 

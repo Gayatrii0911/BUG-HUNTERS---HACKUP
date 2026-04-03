@@ -32,16 +32,15 @@ def make_decision(risk_score: float, deviations: Dict, device_info: Dict, risk_r
 
     # 3. Fraud Chain Detection (ATO detection)
     is_new_access = deviations.get("new_device", False) or deviations.get("new_location", False)
-    fraud_chain = is_new_access and anomaly_score > 0.5
-
+    fraud_chain = is_new_access and anomaly_score >= 0.3
+    
     if fraud_chain:
         action = "BLOCK"
         color = "red"
 
     # 4. Critical Fraud High-Impact Flag
-    # Rule: fraud_chain AND anomaly == HIGH AND graph_risk high
     critical_fraud = False
-    if fraud_chain and anomaly_level == "HIGH" and graph_risk > 30: # 30 because graph is capped at 40
+    if fraud_chain and (anomaly_level in ["HIGH", "MEDIUM"]) and graph_risk > 20:
         critical_fraud = True
         action = "BLOCK"
         color = "red"
