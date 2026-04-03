@@ -10,7 +10,6 @@ if hasattr(typing, 'ForwardRef'):
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.transaction import router as transaction_router
-from backend.routes.debug import router as debug_router
 from backend.routes.alerts import router as alerts_router
 from backend.routes.simulation import router as simulation_router
 from backend.routes.trace import router as trace_router
@@ -61,7 +60,6 @@ def root():
     }
 
 app.include_router(transaction_router)
-app.include_router(debug_router)
 app.include_router(alerts_router)
 app.include_router(simulation_router)
 app.include_router(trace_router)

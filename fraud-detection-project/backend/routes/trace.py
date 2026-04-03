@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from backend.graph.builder import get_graph
+from backend.graph.graph_store import get_graph
 from backend.graph.algorithms import trace_funds
 
 router = APIRouter()
