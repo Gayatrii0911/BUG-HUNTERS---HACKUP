@@ -1,14 +1,25 @@
-const CONFIG = {
-  APPROVE: { color: 'text-green-400', bg: 'bg-green-400/10 border-green-400/30', label: '✓ APPROVE' },
-  MFA:     { color: 'text-orange-400', bg: 'bg-orange-400/10 border-orange-400/30', label: '⚠ MFA' },
-  BLOCK:   { color: 'text-red-400', bg: 'bg-red-400/10 border-red-400/30', label: '✕ BLOCK' }
-}
+const DecisionBadge = ({ decision }) => {
+  const getStyles = (d) => {
+    switch (d?.toUpperCase()) {
+      case 'BLOCK':
+      case 'DENY':
+        return 'bg-red-500/10 text-red-500 border-red-500/30';
+      case 'MFA':
+      case 'REVIEW':
+        return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30';
+      case 'APPROVE':
+      case 'ALLOW':
+        return 'bg-green-500/10 text-green-400 border-green-500/30';
+      default:
+        return 'bg-slate-500/10 text-slate-400 border-slate-500/30';
+    }
+  };
 
-export default function DecisionBadge({ decision }) {
-  const config = CONFIG[decision] || CONFIG.APPROVE
   return (
-    <span className={`text-xs px-2 py-1 rounded-full border font-mono uppercase tracking-wider ${config.bg} ${config.color}`}>
-      {config.label}
+    <span className={`px-2 py-0.5 rounded-full border text-[10px] font-black uppercase tracking-widest ${getStyles(decision)}`}>
+      {decision || 'PENDING'}
     </span>
-  )
-}
+  );
+};
+
+export default DecisionBadge;

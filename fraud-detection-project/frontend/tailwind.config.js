@@ -3,13 +3,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        base: '#0B0F14',
-        panel: '#111827',
-        accent: '#06B6D4',
+        base: '#0f111a',
+        panel: '#1a1c2e',
+        accent: '#3182ce',
       },
       fontFamily: {
-        mono: ['"JetBrains Mono"', 'monospace'],
-        display: ['"Syne"', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Outfit', 'sans-serif'],
       }
     }
   },

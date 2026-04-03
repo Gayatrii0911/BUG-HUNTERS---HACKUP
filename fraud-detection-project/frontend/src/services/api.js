@@ -12,8 +12,9 @@ export const processTransaction = async (data) => {
 };
 
 export const fetchAlerts = async () => {
-  const response = await api.get('/alerts');
-  return response.data;
+    const response = await api.get('/alerts');
+    const data = response.data;
+    return Array.isArray(data) ? data : (data.alerts || []);
 };
 
 export const fetchTrace = async (accountId) => {
@@ -40,3 +41,7 @@ export const fetchAccountSummary = async (accountId) => {
   const response = await api.get(`/account/${accountId}`);
   return response.data;
 };
+
+// Aliases for Consistency
+export const fetchGraph = fetchTrace;
+export const fetchAccount = fetchAccountSummary;

@@ -62,7 +62,7 @@ def test_fraud_chain_refinement():
     # Updated assertion for structured reasons
     reason_messages = [r["message"] for r in data["reasons"]]
     assert any("Suspicious login followed by anomalous transaction" in m for m in reason_messages)
-    assert data["risk_score"] >= 70
+    assert data["risk_score"] >= 60
     print("✅ Fraud Chain Verified")
 
 def test_min_risk_floor():

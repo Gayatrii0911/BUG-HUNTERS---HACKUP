@@ -18,11 +18,12 @@ class TransactionResponse(BaseModel):
     risk_score: float
     risk_level: str
     decision: str
-    reasons: List[str]
-    reason_categories: Optional[Dict[str, List[str]]] = None
+    reasons: List[Dict[str, str]]
+    reason_categories: Optional[Dict[str, List[Dict[str, str]]]] = None
     score_breakdown: Dict[str, float]
     anomaly_score: float
     anomaly_level: str
+    confidence: float
     fraud_chain_detected: bool
     is_pre_transaction_check: bool = True
     alert: bool

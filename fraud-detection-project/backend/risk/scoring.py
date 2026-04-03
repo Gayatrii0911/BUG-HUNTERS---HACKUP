@@ -21,17 +21,17 @@ def compute_risk_score(
 
     # 1. Base Score calculation with refined weights
     weighted_sum = (
-        graph_score * 0.30 +
+        graph_score * 0.35 +
         anomaly_score * 0.25 +
         behavior_score * 0.25 +
-        device_score * 0.20
+        device_score * 0.15
     )
     
     final_score = weighted_sum * 100
 
     # 2. Combined Intelligence Boost (Coordinated Fraud)
-    if graph_score > 0.6 and anomaly_score > 0.6:
-        final_score += 15
+    if graph_score >= 0.5 and anomaly_score >= 0.5:
+        final_score += 30
         
     # 3. Synthetic Identity Check (Multi-user hardware fingerprint)
     if identity_signals and identity_signals.get("identity_count", 0) >= 3:

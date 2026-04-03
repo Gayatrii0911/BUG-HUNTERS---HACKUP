@@ -40,13 +40,13 @@ The system is built as a real-time adaptive fraud intelligence engine with a mod
 
 ---
 
-## 3. What is REMAINING (To-Do)
+## 3. What is DONE (Completed)
 
 ### Member 3 (Frontend & Simulation)
-- [ ] **React Dashboard**: Building the main Alert monitoring and Transaction list view.
-- [ ] **Graph Visualization**: Implementing Cytoscape.js components to render the trace payloads from M1.
-- [ ] **Simulation Scenarios**: Finalizing the replay scripts to demo the "Elite Level" patterns.
-- [ ] **UI Polish**: Integrating the dark-mode, premium aesthetics requested in the PS.
+- [x] **React Dashboard**: Building the main Alert monitoring and Transaction list view.
+- [x] **Graph Visualization**: Implementing Cytoscape.js components to render the trace payloads from M1.
+- [x] **Simulation Scenarios**: Finalizing the replay scripts to demo the "Elite Level" patterns.
+- [x] **UI Polish**: Integrating the dark-mode, premium aesthetics requested in the PS.
 
 ---
 

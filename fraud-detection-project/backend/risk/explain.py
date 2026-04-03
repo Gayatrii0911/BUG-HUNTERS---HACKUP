@@ -39,6 +39,10 @@ def generate_explanation(
     if deviations.get("frequency_spike"):
         msg = "Transaction frequency increased significantly (possible smurfing)"
         categories["behavior"].append({"message": msg, "type": "behavior"})
+        
+    if deviations.get("self_transfer"):
+        msg = "Suspicious self-transfer (Sender and Receiver are identical)"
+        categories["behavior"].append({"message": msg, "type": "suspicious"})
 
     # 2. Device/Location Reasons (Including Identity Intelligence)
     if deviations.get("new_device"):
