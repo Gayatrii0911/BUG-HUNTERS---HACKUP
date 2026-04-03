@@ -2,14 +2,14 @@ import { useState } from 'react'
 import { submitTransaction } from '../services/api'
 
 const INITIAL = {
-  user_id: '',
-  from_account: '',
-  to_account: '',
+  transaction_id: '',
+  sender_id: '',
+  receiver_id: '',
   amount: '',
   timestamp: new Date().toISOString().slice(0, 16),
-  device_id: '',
-  channel: 'mobile',
-  location: ''
+  device_id: 'unknown',
+  channel: 'web',
+  location: 'unknown'
 }
 
 const DECISION_CONFIG = {
@@ -48,7 +48,7 @@ export default function TransactionForm() {
     }
   }
 
-  const decision = result ? DECISION_CONFIG[result.decision] : null
+  const decision = result ? (DECISION_CONFIG[result.decision] || DECISION_CONFIG['APPROVE']) : null
 
   return (
     <div className="min-h-screen bg-base flex items-center justify-center p-6">
@@ -60,9 +60,7 @@ export default function TransactionForm() {
             <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
             <span className="text-accent text-xs font-mono tracking-widest uppercase">FraudSentinel</span>
           </div>
-          <h1 className="font-display text-3xl font-bold text-white">
-            Transaction Analysis
-          </h1>
+          <h1 className="font-display text-3xl font-bold text-white">Transaction Analysis</h1>
           <p className="text-slate-500 text-sm mt-1">Submit a transaction for real-time fraud evaluation</p>
         </div>
 
@@ -72,13 +70,13 @@ export default function TransactionForm() {
           style={{ animationDelay: '0.1s' }}>
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="User ID" name="user_id" value={form.user_id} onChange={handleChange} placeholder="U101" />
+            <Field label="Transaction ID" name="transaction_id" value={form.transaction_id} onChange={handleChange} placeholder="TXN001" />
             <Field label="Amount (₹)" name="amount" value={form.amount} onChange={handleChange} placeholder="5000" type="number" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="From Account" name="from_account" value={form.from_account} onChange={handleChange} placeholder="A101" />
-            <Field label="To Account" name="to_account" value={form.to_account} onChange={handleChange} placeholder="B202" />
+            <Field label="Sender ID" name="sender_id" value={form.sender_id} onChange={handleChange} placeholder="U101" />
+            <Field label="Receiver ID" name="receiver_id" value={form.receiver_id} onChange={handleChange} placeholder="U202" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -124,50 +122,57 @@ export default function TransactionForm() {
         {result && decision && (
           <div className={`border rounded-2xl p-6 space-y-4 slide-in-right ${decision.bg} ${decision.glow}`}>
 
-            {/* Decision badge */}
             <div className="flex items-center justify-between">
               <span className={`font-display text-2xl font-bold ${decision.color}`}>
                 {decision.label}
               </span>
               <div className="text-right">
                 <div className={`text-4xl font-display font-black ${decision.color}`}>
-                  {result.risk_score}
+                  {result.risk_score ?? result.score ?? '—'}
                 </div>
                 <div className="text-xs text-slate-400 uppercase tracking-wider">Risk Score</div>
               </div>
             </div>
 
-            {/* Risk level bar */}
+            {/* Risk bar */}
             <div>
               <div className="flex justify-between text-xs text-slate-400 mb-1">
                 <span>Risk Level</span>
-                <span className="uppercase">{result.risk_level}</span>
+                <span className="uppercase">{result.risk_level ?? result.level ?? '—'}</span>
               </div>
               <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ${
-                    result.risk_level === 'high' ? 'bg-red-400' :
-                    result.risk_level === 'medium' ? 'bg-orange-400' : 'bg-green-400'
+                    (result.risk_level ?? result.level) === 'high' ? 'bg-red-400' :
+                    (result.risk_level ?? result.level) === 'medium' ? 'bg-orange-400' : 'bg-green-400'
                   }`}
-                  style={{ width: `${result.risk_score}%` }}
+                  style={{ width: `${result.risk_score ?? result.score ?? 0}%` }}
                 />
               </div>
             </div>
 
             {/* Reasons */}
-            <div>
-              <div className="text-xs text-slate-400 uppercase tracking-wider mb-2">Detection Signals</div>
-              <div className="space-y-1.5">
-                {result.reasons.map((r, i) => (
-                  <div key={i} className="flex items-start gap-2 text-sm text-slate-300">
-                    <span className={`mt-0.5 ${decision.color}`}>›</span>
-                    {r}
-                  </div>
-                ))}
+            {(result.reasons || result.flags) && (
+              <div>
+                <div className="text-xs text-slate-400 uppercase tracking-wider mb-2">Detection Signals</div>
+                <div className="space-y-1.5">
+                  {(result.reasons || result.flags || []).map((r, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm text-slate-300">
+                      <span className={`mt-0.5 ${decision.color}`}>›</span>
+                      {r}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Alert flag */}
+            {/* Raw response fallback */}
+            {!result.reasons && !result.flags && (
+              <pre className="text-xs text-slate-400 bg-black/20 rounded-lg p-3 overflow-auto">
+                {JSON.stringify(result, null, 2)}
+              </pre>
+            )}
+
             {result.alert && (
               <div className="flex items-center gap-2 text-xs text-red-400 border-t border-white/5 pt-3">
                 <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />

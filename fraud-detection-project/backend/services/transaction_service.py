@@ -1,6 +1,6 @@
 import time
 import uuid
-from backend.graph.builder import add_transaction
+from backend.graph.builder import add_transaction, get_graph
 from backend.graph.algorithms import generate_signals
 from backend.services.profile_service import get_behavior_analysis, update_user_profile
 from backend.ml.features import extract_features
@@ -10,6 +10,7 @@ from backend.risk.decision import make_decision
 from backend.risk.explain import generate_explanation
 from backend.services.alert_service import generate_and_store_alert
 from backend.db.repositories import save_transaction, save_alert_to_db, save_training_sample, get_training_data
+from backend.behavior.profile_store import get_profile, get_device_users
 
 _tx_count = 0
 RETRAIN_THRESHOLD = 20
@@ -24,30 +25,48 @@ def process_transaction(tx: dict) -> dict:
     receiver = tx.get("receiver_id", "unknown")
     amount = tx.get("amount", 0)
 
-    # ... (Graph / Behavior / ML parts)
+    # 1. Graph Intelligence (Real-time update & Analysis)
     add_transaction(sender, receiver, amount)
-    graph_result = generate_signals(sender, receiver, amount)
-    graph_signals = graph_result.get("signals", {})
+    graph_res = generate_signals(sender, receiver, amount)
+    graph_signals = graph_res.get("signals", {})
 
-    from backend.behavior.profile_store import get_profile # for history
+    # 2. Behavioral / Device Intelligence
     profile = get_profile(sender)
     behavior = get_behavior_analysis(tx)
     deviations = behavior["deviations"]
     device_info = behavior["device_info"]
 
+    # 3. Synthetic Identity Detection (Cross-User hardware)
+    device_id = tx.get("device_id", "unknown")
+    associated_users = get_device_users(device_id) if device_id != "unknown" else []
+    identity_signals = {
+        "shared_hardware_users": associated_users,
+        "identity_count": len(associated_users)
+    }
+
+    # 4. ML Anomaly Scoring
     features = extract_features(tx, deviations, device_info)
     anomaly_score = score_transaction(features)
 
+<<<<<<< HEAD
     # 1. Base Scored Result
+=======
+    # 5. Elite Fusion Scoring (Coordinated + History + Identity)
+>>>>>>> e35f700abcf1402291ab08e82ea2fd2d2dbaa968
     risk_result = compute_risk_score(
         graph_signals, 
         anomaly_score, 
         deviations, 
         device_info, 
-        profile["recent_risk_scores"]
+        profile["recent_risk_scores"],
+        identity_signals
     )
     
+<<<<<<< HEAD
     # 2. Decision Logic (Initial)
+=======
+    # 6. Decision & Explanation
+>>>>>>> e35f700abcf1402291ab08e82ea2fd2d2dbaa968
     decision = make_decision(
         risk_result["risk_score"], 
         deviations, 
@@ -55,6 +74,7 @@ def process_transaction(tx: dict) -> dict:
         risk_result
     )
     
+<<<<<<< HEAD
     # 3. Fraud Chain Boost (Refined Scoring)
     # If fraud chain detected, boost the final risk score by +20
     final_risk_score = risk_result["risk_score"]
@@ -69,11 +89,15 @@ def process_transaction(tx: dict) -> dict:
 
     # 4. Structured Explainability
     explanation_result = generate_explanation(
+=======
+    reasons = generate_explanation(
+>>>>>>> e35f700abcf1402291ab08e82ea2fd2d2dbaa968
         deviations, 
         device_info, 
         graph_signals, 
         risk_result, 
-        profile["recent_risk_scores"]
+        profile["recent_risk_scores"],
+        identity_signals
     )
     
     reasons = explanation_result["reasons"]
@@ -88,7 +112,11 @@ def process_transaction(tx: dict) -> dict:
 
     alert = generate_and_store_alert(tx, decision, reasons)
     
+<<<<<<< HEAD
     # Update behavioral profile
+=======
+    # 7. Persistence & Lifecycle
+>>>>>>> e35f700abcf1402291ab08e82ea2fd2d2dbaa968
     update_user_profile(tx)
     profile["recent_risk_scores"].append(final_risk_score)
     if len(profile["recent_risk_scores"]) > 5:
@@ -96,13 +124,11 @@ def process_transaction(tx: dict) -> dict:
 
     try:
         save_transaction(tx, risk_result, decision)
-        save_alert_to_db(alert)
         save_training_sample(features, 0)
         
         global _tx_count
         _tx_count += 1
         if _tx_count >= RETRAIN_THRESHOLD:
-            print(f"[ML] Retraining triggered at {_tx_count} transactions...")
             all_data = get_training_data()
             if all_data:
                 retrain(all_data)
@@ -110,7 +136,11 @@ def process_transaction(tx: dict) -> dict:
     except Exception as e:
         print(f"Post-processing error: {e}")
 
+<<<<<<< HEAD
     # STRICT FINAL OUTPUT FORMAT
+=======
+    # ELITE RESPONSE (Matches Section 9 of Tech Spec)
+>>>>>>> e35f700abcf1402291ab08e82ea2fd2d2dbaa968
     return {
         "transaction_id": tx["transaction_id"],
         "risk_score": risk_result["risk_score"],
