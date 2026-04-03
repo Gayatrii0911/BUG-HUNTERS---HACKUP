@@ -49,8 +49,8 @@ def process_transaction(tx: dict) -> dict:
         "identity_count": len(associated_users)
     }
 
-    # 4. ML Anomaly Scoring
-    features = extract_features(tx, deviations, device_info)
+    # 4. ML Anomaly Scoring (Graph-Aware Intelligence)
+    features = extract_features(tx, deviations, device_info, graph_signals)
     anomaly_score = score_transaction(features)
 
     # 5. Elite Fusion Scoring (Coordinated + History + Identity)
@@ -146,4 +146,10 @@ def process_transaction(tx: dict) -> dict:
         "is_pre_transaction_check": True,
         "alert": risk_result["risk_score"] >= 40 or decision.get("critical_fraud", False),
         "alert_id": alert.get("alert_id") if (risk_result["risk_score"] >= 40 or decision.get("critical_fraud", False)) else "N/A"
+    }
+def get_training_status():
+    return {
+        "current_samples": _tx_count,
+        "threshold": RETRAIN_THRESHOLD,
+        "progress_percent": int((_tx_count / RETRAIN_THRESHOLD) * 100)
     }

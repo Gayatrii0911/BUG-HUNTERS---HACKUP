@@ -41,12 +41,14 @@ def startup():
 
 @app.get("/health")
 def health():
+    from backend.services.transaction_service import get_training_status
     return {
         "status": "healthy",
         "version": "1.2.0",
         "uptime_seconds": int(time.time() - START_TIME),
         "engine": "Hybrid-Graph-ML",
-        "ml_model": "IsolationForest-v1"
+        "ml_model": "IsolationForest-v1",
+        "adaptive_learning": get_training_status()
     }
 
 @app.get("/")

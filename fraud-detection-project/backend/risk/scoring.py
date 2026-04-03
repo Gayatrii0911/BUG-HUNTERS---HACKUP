@@ -15,24 +15,24 @@ def compute_risk_score(
     - Synthetic Identity penalty (+20 for shared hardware)
     - Coordinated Fraud boost (+15 for Graph + ML agreement)
     """
-    # 1. Normalize Graph Risk (Cap at 0.4 as per calibration)
-    graph_score = min(0.4, _graph_to_score(graph_signals))
+    # 1. Normalize Graph Risk
+    graph_score = _graph_to_score(graph_signals)
     behavior_score = deviations.get("deviation_score", 0.0)
     device_score = device_info.get("device_risk", 0.0)
 
     # 2. Base Score calculation with refined weights
     weighted_sum = (
         graph_score * 0.30 +
-        anomaly_score * 0.25 +
+        anomaly_score * 0.35 +
         behavior_score * 0.25 +
-        device_score * 0.20
+        device_score * 0.10
     )
     
     final_score = weighted_sum * 100
 
     # 3. Combined Intelligence Boost (Coordinated Fraud)
-    if graph_score > 0.3 and anomaly_score > 0.6: # adjusted for capped graph
-        final_score += 15
+    if graph_score >= 0.5 and anomaly_score >= 0.4:
+        final_score += 30
         
     # 4. Synthetic Identity Check
     if identity_signals and identity_signals.get("identity_count", 0) >= 3:
@@ -40,17 +40,17 @@ def compute_risk_score(
 
     # 5. Risk Escalation (Adaptive History)
     if recent_scores:
-        suspicious_count = len([s for s in recent_scores if s > 50])
-        if suspicious_count >= 2:
-            final_score += 10
+        suspicious_count = len([s for s in recent_scores if s >= 40])
+        if suspicious_count >= 1:
+            final_score += 15
 
     # 6. Anomaly Level & Minimum Risk Floor
-    if anomaly_score > 0.7:
+    if anomaly_score > 0.6:
         anomaly_level = "HIGH"
-        final_score = max(final_score, 50.0)
-    elif anomaly_score > 0.4:
+        final_score = max(final_score, 80.0)
+    elif anomaly_score > 0.35:
         anomaly_level = "MEDIUM"
-        final_score = max(final_score, 25.0)
+        final_score = max(final_score, 55.0)
     else:
         anomaly_level = "LOW"
 

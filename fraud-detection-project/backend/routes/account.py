@@ -32,12 +32,16 @@ def get_account_details(account_id: str):
     if account_id in associated_users:
         associated_users.remove(account_id)
 
+    # Identify if account is fraudulent/suspicious based on connections or risk history
+    is_fraudulent = connections >= 5 or any(s >= 70 for s in profile["recent_risk_scores"])
+    
     return {
         "account_id": account_id,
         "transaction_count": profile["transaction_count"],
         "total_volume": profile["total_amount"],
         "risk_history": profile["recent_risk_scores"],
         "graph_connections": connections,
+        "is_fraudulent": is_fraudulent,
         "behavior_snapshot": {
             "top_locations": sorted(profile["locations"].items(), key=lambda x: x[1], reverse=True)[:3],
             "top_devices": sorted(profile["devices"].items(), key=lambda x: x[1], reverse=True)[:3],

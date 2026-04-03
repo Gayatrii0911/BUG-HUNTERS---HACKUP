@@ -15,7 +15,7 @@ import Dashboard from './pages/Dashboard';
 import Alerts from './pages/Alerts';
 import Investigator from './pages/Investigator';
 import Simulation from './pages/Simulation';
-import './styles/index.css';
+import './styles/theme.css';
 
 // StatusBadge must be defined BEFORE Sidebar to avoid ReferenceError
 const StatusBadge = ({ label, status, color }) => (

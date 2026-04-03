@@ -51,7 +51,7 @@ export default function Alerts() {
                         <h2 className="text-2xl font-black font-display text-white uppercase tracking-tighter">Security Alerts Hub</h2>
                         <div className="flex items-center space-x-3 mt-1">
                            <span className="text-[10px] text-slate-500 font-mono uppercase font-black tracking-widest leading-none">
-                              Neural Intelligence Buffering...
+                               Neural Intelligence Buffering...
                            </span>
                            <div className="h-1 w-24 bg-cyber-border rounded-full overflow-hidden">
                               <motion.div 

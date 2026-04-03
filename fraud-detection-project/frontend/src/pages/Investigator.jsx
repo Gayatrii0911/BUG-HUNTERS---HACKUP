@@ -240,3 +240,27 @@ function Legend({ color, text }) {
     </div>
   );
 }
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Sub-components moved above or converted to function declarations to avoid ReferenceErrors
+function DetailRow({ label, value, color }) {
+  return (
+    <div className="flex justify-between items-center text-[11px] font-bold">
+      <span className="text-slate-500 uppercase tracking-widest">{label}</span>
+      <span className={`${color} font-mono font-black`}>{value}</span>
+    </div>
+  );
+}
+
+function Legend({ color, text }) {
+  return (
+    <div className="flex items-center space-x-2 bg-cyber-panel/80 px-3 py-1.5 rounded-lg border border-white/5">
+       <div className={`w-3 h-3 rounded border ${color}`}></div>
+       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{text}</span>
+    </div>
+  );
+}

@@ -12,6 +12,7 @@ def detect_cycle(graph, account: str):
         cycles = list(nx.simple_cycles(dg))
         for cycle in cycles:
             if account in cycle:
+                # Use Maximal Signal Strength to avoid diluting critical indicators
                 return True, cycle + [cycle[0]]
         return False, []
     except: return False, []
