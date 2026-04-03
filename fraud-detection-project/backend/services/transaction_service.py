@@ -44,7 +44,7 @@ def process_transaction(tx: dict) -> dict:
         "identity_count": len(associated_users)
     }
 
-    # 4. ML Anomaly Scoring
+    # 4. ML Anomly Scoring
     features = extract_features(tx, deviations, device_info)
     anomaly_score = score_transaction(features)
 
@@ -63,10 +63,19 @@ def process_transaction(tx: dict) -> dict:
         risk_result["risk_score"], 
         deviations, 
         device_info, 
-        risk_result["anomaly_level"]
+        risk_result
     )
     
-    reasons = generate_explanation(
+    # Fraud Chain Boost (if detected)
+    final_risk_score = risk_result["risk_score"]
+    if decision.get("fraud_chain_detected"):
+        final_risk_score = min(100.0, final_risk_score + 20.0)
+        risk_result["risk_score"] = final_risk_score
+        from backend.risk.scoring import _get_risk_level
+        risk_result["risk_level"] = _get_risk_level(final_risk_score)
+        decision = make_decision(final_risk_score, deviations, device_info, risk_result)
+
+    explanation_result = generate_explanation(
         deviations, 
         device_info, 
         graph_signals, 
@@ -74,12 +83,22 @@ def process_transaction(tx: dict) -> dict:
         profile["recent_risk_scores"],
         identity_signals
     )
+    
+    reasons = explanation_result["reasons"]
+    reason_categories = explanation_result["categories"]
+
+    # If fraud chain detected, add specifically to categories
+    if decision.get("fraud_chain_detected"):
+        chain_msg = "Suspicious login followed by anomalous transaction (possible account takeover)"
+        if chain_msg not in reason_categories["fraud_chain"]:
+            reason_categories["fraud_chain"].append(chain_msg)
+            reasons.append(chain_msg)
 
     alert = generate_and_store_alert(tx, decision, reasons)
     
     # 7. Persistence & Lifecycle
     update_user_profile(tx)
-    profile["recent_risk_scores"].append(risk_result["risk_score"])
+    profile["recent_risk_scores"].append(final_risk_score)
     if len(profile["recent_risk_scores"]) > 5:
         profile["recent_risk_scores"].pop(0)
 
@@ -97,18 +116,19 @@ def process_transaction(tx: dict) -> dict:
     except Exception as e:
         print(f"Post-processing error: {e}")
 
-    # ELITE RESPONSE (Matches Section 9 of Tech Spec)
+    # ELITE RESPONSE (Full Section 9 Compatibility)
     return {
         "transaction_id": tx["transaction_id"],
         "risk_score": risk_result["risk_score"],
         "risk_level": risk_result["risk_level"],
         "decision": decision["action"],
         "reasons": reasons,
+        "reason_categories": reason_categories,
         "score_breakdown": risk_result["components"],
         "anomaly_score": risk_result["anomaly_score"],
         "anomaly_level": risk_result["anomaly_level"],
+        "confidence": risk_result["confidence"],
         "fraud_chain_detected": decision.get("fraud_chain_detected", False),
         "is_pre_transaction_check": True,
         "alert": risk_result["risk_score"] >= 40,
-        "alert_id": alert["alert_id"]
-    }
+    }

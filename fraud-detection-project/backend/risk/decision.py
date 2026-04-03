@@ -1,12 +1,13 @@
 from typing import Dict, Any
 
-def make_decision(risk_score: float, deviations: Dict, device_info: Dict, anomaly_level: str) -> Dict[str, Any]:
+def make_decision(risk_score: float, deviations: Dict, device_info: Dict, risk_result: Dict) -> Dict[str, Any]:
     """
     Elite-level decisioning:
     - Threshold-based actions
-    - Overrides for extreme threats
-    - Fraud chain markers
+    - Fraud chain markers (ATO detection)
     """
+    anomaly_score = risk_result.get("anomaly_score", 0.0)
+    
     if risk_score >= 70:
         action = "BLOCK"
         color = "red"
@@ -17,11 +18,12 @@ def make_decision(risk_score: float, deviations: Dict, device_info: Dict, anomal
         action = "APPROVE"
         color = "green"
 
-    # Fraud Chain Detection: (New Device/Location) + HIGH Anomaly
-    is_ato_signal = deviations.get("new_device") or device_info.get("impossible_travel")
-    fraud_chain = is_ato_signal and anomaly_level == "HIGH"
+    # Fraud Chain Detection logic:
+    # (new device OR new location) AND anomaly_score > 0.5
+    is_new_access = deviations.get("new_device", False) or deviations.get("new_location", False)
+    fraud_chain = is_new_access and anomaly_score > 0.5
 
-    # Override: Force BLOCK on fraud chains
+    # Force BLOCK if fraud chain is detected
     if fraud_chain:
         action = "BLOCK"
         color = "red"
