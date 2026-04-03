@@ -10,6 +10,8 @@ _profiles: Dict[str, Dict[str, Any]] = defaultdict(lambda: {
     "devices": defaultdict(int),
     "locations": defaultdict(int),
     "channels": defaultdict(int),
+    "transaction_hours": defaultdict(int),
+    "recent_risk_scores": [],
 })
 
 
@@ -27,3 +29,12 @@ def update_profile(user_id: str, tx: Dict[str, Any]):
     p["devices"][tx.get("device_id", "unknown")] += 1
     p["locations"][tx.get("location", "unknown")] += 1
     p["channels"][tx.get("channel", "unknown")] += 1
+    
+    # NEW: Store hour of transaction (0-23)
+    if tx.get("timestamp"):
+        try:
+            import datetime
+            dt = datetime.datetime.fromtimestamp(float(tx["timestamp"]))
+            p["transaction_hours"][dt.hour] += 1
+        except:
+            pass
