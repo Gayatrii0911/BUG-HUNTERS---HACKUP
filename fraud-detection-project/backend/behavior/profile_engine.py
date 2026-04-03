@@ -11,10 +11,14 @@ def compute_deviations(user_id: str, tx: Dict[str, Any]) -> Dict[str, Any]:
         "frequency_spike": False,
         "new_receiver": False,
         "new_device": False,
-        "new_location": False,
         "new_channel": False,
+        "time_deviation": False,
+        "avg_amount": 0.0,
         "deviation_score": 0.0,
     }
+    if len(amounts) >= 1:
+        result["avg_amount"] = round(statistics.mean(amounts), 2)
+    
     if len(amounts) >= 3:
         avg = statistics.mean(amounts)
         std = statistics.stdev(amounts) if len(amounts) > 1 else 1.0
@@ -28,6 +32,17 @@ def compute_deviations(user_id: str, tx: Dict[str, Any]) -> Dict[str, Any]:
     result["new_device"] = tx.get("device_id") not in profile["devices"]
     result["new_location"] = tx.get("location") not in profile["locations"]
     result["new_channel"] = tx.get("channel") not in profile["channels"]
+
+    # NEW: Time-of-day check (Flag if not in top 3 user hours)
+    try:
+        import datetime
+        dt = datetime.datetime.fromtimestamp(float(tx.get("timestamp", 0)))
+        user_hours = sorted(profile["transaction_hours"].items(), key=lambda x: x[1], reverse=True)[:3]
+        top_hours = [h for h, c in user_hours]
+        if profile["transaction_count"] > 10 and dt.hour not in top_hours:
+            result["time_deviation"] = True
+    except:
+        pass
     flags = [
         result["amount_deviation"] > 2.5,
         result["frequency_spike"],
@@ -35,6 +50,7 @@ def compute_deviations(user_id: str, tx: Dict[str, Any]) -> Dict[str, Any]:
         result["new_device"],
         result["new_location"],
         result["new_channel"],
+        result["time_deviation"],
     ]
     result["deviation_score"] = round(sum(flags) / len(flags), 3)
     return result
