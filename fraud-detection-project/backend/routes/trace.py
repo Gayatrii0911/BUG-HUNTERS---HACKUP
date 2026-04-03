@@ -19,10 +19,14 @@ def trace_account(account: str, max_depth: int = 4):
 
     result = trace_funds(graph, account, max_depth=max_depth)
 
+    from backend.graph.formatter import build_subgraph_for_account
+    graph_payload = build_subgraph_for_account(graph, account, depth=max_depth)
+
     return {
         "status": "success",
         "account": result["account"],
         "paths": result["paths"],
         "path_count": len(result["paths"]),
-        "max_depth": max_depth
+        "max_depth": max_depth,
+        "graph_payload": graph_payload
     }
