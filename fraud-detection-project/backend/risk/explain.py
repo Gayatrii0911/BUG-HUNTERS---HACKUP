@@ -13,7 +13,7 @@ def generate_explanation(
     amount = deviations.get("amount", 0)
     avg = deviations.get("avg_amount", 0)
     if deviations.get("amount_deviation", 0) > 2.5:
-        reasons.append(f"Transaction amount ₹{amount:,} significantly exceeds user average ₹{avg:,}")
+        reasons.append(f"Transaction amount Rs {amount:,} significantly exceeds user average Rs {avg:,}")
     
     if deviations.get("time_deviation"):
         import datetime

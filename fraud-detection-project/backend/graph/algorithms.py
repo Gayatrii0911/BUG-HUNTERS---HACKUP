@@ -14,25 +14,22 @@ def detect_cycle(graph, account: str):
         return False, []
         
     try:
-        # Convert MultiDiGraph to DiGraph for cycle detection as simple_cycles only supports DiGraph.
-        # This keeps the logic consistent.
         dg = nx.DiGraph(graph)
         cycles = list(nx.simple_cycles(dg))
         for cycle in cycles:
             if account in cycle:
-                # Close the cycle for visualization
-                return True, cycle + [cycle[0]]
+                full_cycle = cycle + [cycle[0]]
+                print(f"[Graph] Cycle detected involving {account}: {' -> '.join(map(str, full_cycle))}")
+                return True, full_cycle
         return False, []
-    except Exception:
+    except Exception as e:
+        print(f"[Graph] Cycle check error: {e}")
         return False, []
 
 # -------------------------------
 # 2. CONNECTION COUNT
 # -------------------------------
 def get_connections(graph, account: str):
-    """
-    Returns unique degree (combined in-neighbors and out-neighbors).
-    """
     if account not in graph:
         return 0
     in_nb = set(graph.predecessors(account))
@@ -43,14 +40,10 @@ def get_connections(graph, account: str):
 # 3. HIGH FREQUENCY DETECTION
 # -------------------------------
 def detect_high_frequency(graph, account: str, window: int = 60, threshold: int = 5):
-    """
-    Check if account made too many transactions in the last hour.
-    """
     current_time = time.time()
     count = 0
     if account not in graph:
         return False
-    # MultiDiGraph out_edges handles multiple edges correctly
     for _, _, data in graph.out_edges(account, data=True):
         tx_time = float(data.get("timestamp", 0))
         if tx_time and (current_time - tx_time) <= window:
@@ -61,16 +54,13 @@ def detect_high_frequency(graph, account: str, window: int = 60, threshold: int 
 # 4. TRACE FUNDS
 # -------------------------------
 def trace_funds(graph, account: str, max_depth: int = 4):
-    """
-    DFS retrieval of fund flow paths starting at 'account'.
-    """
     paths = []
     def dfs(current, path, depth):
         if depth >= max_depth:
             return
         for neighbor in graph.successors(current):
             if neighbor in path:
-                continue # avoid infinite recursion in small cycles
+                continue
             new_path = path + [neighbor]
             paths.append(new_path)
             dfs(neighbor, new_path, depth + 1)
@@ -83,10 +73,6 @@ def trace_funds(graph, account: str, max_depth: int = 4):
 # 5. GENERATE SIGNALS (The Orchestrator)
 # -------------------------------
 def generate_signals(from_account: str, to_account: str, amount: float):
-    """
-    Primary API for Relationship Intelligence (Member 1).
-    Fulfillment of the frozen contract.
-    """
     g = get_graph()
     
     cycle, cycle_path = detect_cycle(g, from_account)
@@ -99,23 +85,21 @@ def generate_signals(from_account: str, to_account: str, amount: float):
     
     high_freq = detect_high_frequency(g, from_account)
     
-    # Calculate M1 risk contribution
-    # Score 0 to 100 based on standard project weights
     graph_score = 0
     explanations = []
     
     if cycle:
         graph_score += 40
-        explanations.append(f"Cycle detected involving this account: {' -> '.join(map(str, cycle_path))}")
+        explanations.append(f"Cycle detected: {' -> '.join(map(str, cycle_path))}")
     if is_hub:
         graph_score += 25
-        explanations.append(f"High connection account ({connections} neighbors)")
+        explanations.append(f"Hub account ({connections} neighbors)")
     if suspicious_chain:
         graph_score += 20
-        explanations.append(f"Suspicious chain detected starting from this account ({len(long_paths[0])} hops)")
+        explanations.append(f"Suspicious path detected ({len(long_paths[0])} hops)")
     if high_freq:
         graph_score += 15
-        explanations.append("High transaction frequency from this wallet")
+        explanations.append("High transaction frequency")
     
     signals = {
         "cycle": cycle,
