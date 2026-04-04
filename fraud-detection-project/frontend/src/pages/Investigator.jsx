@@ -15,6 +15,7 @@ export default function Investigator() {
   const [selectedNode, setSelectedNode] = useState(null);
   const [error, setError] = useState(null);
   const [showLogs, setShowLogs] = useState(false);
+  const [showClearance, setShowClearance] = useState(false);
 
   useEffect(() => {
     if (initialId) {
@@ -65,6 +66,7 @@ export default function Investigator() {
   const handleNodeClick = (nodeData) => {
     setSelectedNode(nodeData);
     setShowLogs(false);
+    setShowClearance(false);
   };
 
   return (
@@ -188,11 +190,12 @@ export default function Investigator() {
                         <Activity className="w-3 h-3 text-cyber-accent" />
                         <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Behavioral Analysis</span>
                      </div>
-                     {!showLogs ? (
+                     {!showLogs && !showClearance && (
                         <p className={`text-[10px] leading-relaxed italic ${selectedNode.is_fraudulent ? 'text-cyber-danger/80' : 'text-slate-500'}`}>
                            "{selectedNode.reasons || `SYSTEM: ${selectedNode.is_fraudulent ? 'SUSPECT' : 'APPROVED'} | Account ${selectedNode.id} identified as ${nodeTransactions.filter(t => t.source === selectedNode.id).length >= nodeTransactions.filter(t => t.target === selectedNode.id).length ? 'PROLIFIC SENDER' : 'PRIMARY RECEIVER'}. AI confirms profile integrity within normal fund-flow bounds.`}"
                         </p>
-                     ) : (
+                     )}
+                     {showLogs && (
                         <div className="space-y-3 pt-2">
                            {nodeTransactions.length > 0 ? (
                               nodeTransactions.slice(0, 6).map((tx, i) => (
@@ -209,14 +212,61 @@ export default function Investigator() {
                            )}
                         </div>
                      )}
+                     {showClearance && (
+                      <div className="space-y-3 pt-2 font-mono">
+                         <div className="text-[11px] text-white font-black mb-2 pb-2 border-b border-white/10 flex items-center justify-between">
+                            <span className="tracking-widest">PRE-CLEARANCE REPORT</span>
+                            <ShieldAlert className={`w-3 h-3 ${selectedNode.is_blocked || selectedNode.risk_score >= 80 ? 'text-cyber-danger animate-pulse' : selectedNode.risk_score >= 40 ? 'text-cyber-warning' : 'text-cyber-success'}`} />
+                         </div>
+                         <div className="text-[9px] space-y-3 tracking-widest uppercase">
+                            <div className="flex justify-between text-slate-400">
+                               <span>Subject ID</span>
+                               <span className="text-white text-[10px]">{selectedNode.id}</span>
+                            </div>
+                            <div className="flex justify-between text-slate-400">
+                               <span>Network History</span>
+                               <span className="text-white">{nodeTransactions.length} Events</span>
+                            </div>
+                            <div className="flex justify-between text-slate-400 items-center">
+                               <span>Calculated Risk</span>
+                               <span className={`text-[12px] font-black ${selectedNode.is_blocked || selectedNode.risk_score >= 80 ? "text-cyber-danger" : selectedNode.risk_score >= 40 ? "text-cyber-warning" : "text-cyber-success"}`}>
+                                  {selectedNode.risk_score ? selectedNode.risk_score.toFixed(1) : 0}
+                               </span>
+                            </div>
+                            <div className="flex justify-between text-slate-400 items-center">
+                               <span>Execution Status</span>
+                               <span className={`px-2 py-0.5 border rounded font-black ${selectedNode.is_blocked || selectedNode.risk_score >= 80 ? 'text-cyber-danger border-cyber-danger bg-cyber-danger/10' : selectedNode.risk_score >= 40 ? 'text-cyber-warning border-cyber-warning bg-cyber-warning/10' : 'text-cyber-success border-cyber-success bg-cyber-success/10'}`}>
+                                  {selectedNode.is_blocked || selectedNode.risk_score >= 80 ? 'BLOCKED' : selectedNode.risk_score >= 40 ? 'MFA REQUIRED' : 'APPROVED'}
+                               </span>
+                            </div>
+                         </div>
+                         <div className="mt-4 p-3 bg-black/40 border border-white/5 rounded text-[9px] leading-relaxed text-slate-400">
+                            <strong>RESULT:</strong> {
+                               selectedNode.is_blocked || selectedNode.risk_score >= 80 
+                               ? "Due to the high risk threshold and blocked classification, no further outbound transactions can be achieved from this account."
+                               : selectedNode.risk_score >= 40
+                               ? "Account is experiencing elevated risk. Multi-Factor Authentication forces must be cleared before transactions can be achieved."
+                               : "Risk is within normal bounds. Standard transactions can be fully achieved without friction."
+                            }
+                         </div>
+                      </div>
+                     )}
                   </div>
 
-                  <button 
-                    onClick={() => setShowLogs(!showLogs)}
-                    className="w-full py-4 text-[10px] font-black uppercase tracking-[0.2em] bg-cyber-bg border border-cyber-border rounded-xl hover:border-cyber-accent/50 hover:text-white transition-all"
-                  >
-                     {showLogs ? "Return to Behavioral Intel" : "View Complete Transaction Log"}
-                  </button>
+                  <div className="grid grid-cols-2 gap-3">
+                     <button 
+                       onClick={() => { setShowLogs(!showLogs); setShowClearance(false); }}
+                       className={`w-full py-3 text-[9px] font-black uppercase tracking-[0.2em] rounded-xl transition-all border ${showLogs ? 'bg-cyber-accent text-cyber-bg border-cyber-accent' : 'bg-cyber-bg text-slate-300 border-cyber-border hover:border-cyber-accent/50 hover:text-white'}`}
+                     >
+                        Tx Logs
+                     </button>
+                     <button 
+                       onClick={() => { setShowClearance(!showClearance); setShowLogs(false); }}
+                       className={`w-full py-3 text-[9px] font-black uppercase tracking-[0.2em] rounded-xl transition-all border ${showClearance ? 'bg-cyber-danger text-black border-cyber-danger' : 'bg-cyber-danger/10 border-cyber-danger/30 text-cyber-danger hover:bg-cyber-danger hover:text-black shadow-[0_0_15px_rgba(255,0,60,0.2)]'}`}
+                     >
+                        Check Config
+                     </button>
+                  </div>
               </motion.div>
             )}
           </AnimatePresence>
