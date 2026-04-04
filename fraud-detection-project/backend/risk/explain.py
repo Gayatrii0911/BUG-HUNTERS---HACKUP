@@ -33,7 +33,11 @@ def generate_explanation(
         categories["behavior"].append({"message": msg, "type": "behavior"})
     
     if deviations.get("time_deviation"):
-        msg = "Transaction at an unusual hour for this user's profile"
+        msg = "Transaction at highly unusual time for this user profile"
+        categories["behavior"].append({"message": msg, "type": "behavior"})
+
+    if deviations.get("dormant_activation"):
+        msg = "Dormant account reactivation: Unexpected activity after long period of dormancy"
         categories["behavior"].append({"message": msg, "type": "behavior"})
     
     if deviations.get("frequency_spike"):
@@ -80,6 +84,10 @@ def generate_explanation(
     
     if graph_signals.get("is_hub"):
         msg = f"Account flagged as 'Hub' (Connected to {graph_signals.get('connections', 0)} entities)"
+        categories["graph"].append({"message": msg, "type": "graph"})
+
+    if graph_signals.get("is_relay"):
+        msg = "Professional 'Relay' behavior: Node rapidly redistributing incoming funds to multiple targets"
         categories["graph"].append({"message": msg, "type": "graph"})
 
     if graph_signals.get("suspicious_chain"):

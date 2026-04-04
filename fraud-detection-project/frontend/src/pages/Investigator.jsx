@@ -240,4 +240,7 @@ function Legend({ color, text }) {
     </div>
   );
 }
+<<<<<<< HEAD
+=======
 
+>>>>>>> 052ac08e59014c513fdbaa99fdef35420966e03f

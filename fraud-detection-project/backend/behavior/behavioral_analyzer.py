@@ -59,6 +59,12 @@ def analyze_behavior(tx: Dict[str, Any]) -> Dict[str, Any]:
         top_hours = [h for h, c in user_hours]
         if profile["transaction_count"] > 5 and dt.hour not in top_hours:
             deviations["time_deviation"] = True
+            
+        # Dormant account activation (Inactivity for > 300s in demo terms)
+        if len(profile["timestamps"]) >= 1:
+            last_ts = float(profile["timestamps"][-1])
+            if (timestamp - last_ts) > 300: # 5 mins gap for demo
+                 deviations["dormant_activation"] = True
     except:
         pass
 
