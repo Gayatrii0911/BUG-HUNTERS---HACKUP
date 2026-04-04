@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "C:\Users\gayat\OneDrive\Documents\BUG-HUNTERS---HACKUP\fraud-detection-project\backend\services\transaction_service.py", line 36, in process_transaction
+    graph_res = generate_signals(sender, receiver, amount)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gayat\OneDrive\Documents\BUG-HUNTERS---HACKUP\fraud-detection-project\backend\graph\algorithms.py", line 155, in generate_signals
+    if is_smurfing: graph_score += 15
+       ^^^^^^^^^^^
+NameError: name 'is_smurfing' is not defined

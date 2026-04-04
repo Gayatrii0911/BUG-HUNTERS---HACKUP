@@ -79,7 +79,7 @@ const CyberTable = ({ alerts }) => {
               </td>
               <td className="px-6 py-3">
                 <button 
-                  onClick={() => navigate(`/investigator?id=${alert.transaction_id || alert.sender_id || alert.user_id}`)}
+                  onClick={() => navigate(`/investigator?id=${alert.sender_id || alert.user_id || alert.transaction_id}`)}
                   className="p-2 bg-cyber-accent/10 border border-cyber-accent/30 rounded-lg text-cyber-accent hover:bg-cyber-accent hover:text-cyber-bg transition-all group/btn"
                   title="Deep Forensic Trace"
                 >

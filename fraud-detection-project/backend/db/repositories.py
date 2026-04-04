@@ -3,7 +3,28 @@ from datetime import datetime
 from backend.db.database import get_connection
 from typing import Dict, Any, List
 
-
+def rebuild_graph_from_db():
+    from backend.graph.graph_store import add_transaction, reset_graph
+    try:
+        conn = get_connection()
+        rows = conn.execute("SELECT * FROM transactions").fetchall()
+        conn.close()
+        reset_graph()
+        for r in rows:
+            # Re-inject historical data into the live NetworkX graph
+            add_transaction(
+                from_account=r["sender_id"],
+                to_account=r["receiver_id"],
+                amount=r["amount"],
+                transaction_id=r["id"],
+                decision=r["action"],
+                risk_score=r["risk_score"],
+                is_fraud=r["risk_score"] >= 70,
+                is_blocked=r["action"] == "BLOCK"
+            )
+        print(f"SENTINEL-X GRAPH STORAGE RESTORED WITH {len(rows)} TRANSACTIONS FROM DB")
+    except Exception as e:
+        print(f"Error rebuilding graph: {e}")
 def save_transaction(tx: Dict, risk_result: Dict, decision: Dict):
     try:
         conn = get_connection()

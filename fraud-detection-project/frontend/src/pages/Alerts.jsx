@@ -28,8 +28,8 @@ export default function Alerts() {
     const filtered = alerts.filter(a => {
         if (filter === 'all') return true;
         if (filter === 'high') return a.risk_score >= 70;
-        if (filter === 'block') return a.decision === 'BLOCK';
-        if (filter === 'mfa') return a.decision === 'MFA';
+        if (filter === 'block') return (a.decision || a.action) === 'BLOCK';
+        if (filter === 'mfa') return (a.decision || a.action) === 'MFA';
         return true;
     });
 

@@ -1,0 +1,36 @@
+{
+  "alert_id": "ALT-40AFE129",
+  "transaction_id": "c64ea1a3-e8cb-4e8a-9093-b04ab80bc5c1",
+  "sender_id": "Regular_User",
+  "amount": 99000.0,
+  "action": "BLOCK",
+  "risk_score": 95.0,
+  "reasons": [
+    {
+      "message": "Transaction amount Rs 0 exceeds 2x user average Rs 0",
+      "type": "behavior"
+    },
+    {
+      "message": "Login from new device (Device ID: Unknown)",
+      "type": "device"
+    },
+    {
+      "message": "Transaction from new location: Unknown",
+      "type": "device"
+    },
+    {
+      "message": "AI Anomaly check returned CRITICAL confidence score (0.51)",
+      "type": "ml"
+    },
+    {
+      "message": "Stealth Isolated Ring detected: This group is transacting in a disconnected sub-graph, typical of professional laundering units",
+      "type": "strategic"
+    },
+    {
+      "message": "Suspicious login followed by anomalous transaction (possible account takeover)",
+      "type": "fraud_chain"
+    }
+  ],
+  "fraud_type": "money_laundering",
+  "timestamp": "2026-04-04T01:54:21.883044Z"
+}

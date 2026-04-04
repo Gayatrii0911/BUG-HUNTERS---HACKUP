@@ -26,9 +26,11 @@ export default function Simulation() {
       const resp = await processTransaction(tx);
       setResult(resp);
       setShowSuccess(true);
+      setSimStatus(null);
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err) {
       console.error("Manual injection failed", err);
+      setSimStatus(`INJECTION FAILURE: ${err.message || 'Check Console'}`);
     } finally {
       setLoading(false);
     }
@@ -112,6 +114,13 @@ export default function Simulation() {
            
                 <div className="mt-8 pt-8 border-t border-cyber-border space-y-4">
                    <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Demo Orchestration</h3>
+                   <button 
+                     onClick={() => handleScenario('big_transaction')}
+                     className="w-full py-4 bg-cyber-purple/10 border border-cyber-purple text-cyber-purple rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyber-purple hover:text-white transition-all group"
+                   >
+                      <Activity className="w-4 h-4 inline-block mr-2" />
+                      Whale Transaction Alert (Big Tx)
+                   </button>
                    <button 
                      onClick={() => handleScenario('mule_hub')}
                      className="w-full py-4 bg-cyber-accent/10 border border-cyber-border text-cyber-accent rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyber-accent hover:text-cyber-bg transition-all group"
@@ -199,7 +208,7 @@ export default function Simulation() {
 
                      <div className="grid grid-cols-2 gap-12 flex-1 items-start">
                         <div className="space-y-4">
-                           {Object.entries(result.reason_categories).map(([cat, list]) => (
+                           {Object.entries(result.reason_categories || {}).map(([cat, list]) => (
                               list.length > 0 && (
                                  <div key={cat} className="space-y-2">
                                     <h4 className="text-[9px] font-black text-slate-600 uppercase tracking-widest border-b border-cyber-border pb-1">{cat}</h4>
@@ -219,7 +228,7 @@ export default function Simulation() {
                         <div className="space-y-6">
                            <h4 className="text-[9px] font-black text-slate-600 uppercase tracking-widest border-b border-cyber-border pb-1">Weighted Signal Breakdown</h4>
                            <div className="space-y-4">
-                              {Object.entries(result.score_breakdown).map(([key, val]) => (
+                              {Object.entries(result.score_breakdown || {}).map(([key, val]) => (
                                  <div key={key} className="space-y-1.5">
                                     <div className="flex justify-between text-[9px] font-black uppercase text-slate-500">
                                        <span>{key} Analysis</span>

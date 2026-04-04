@@ -34,6 +34,9 @@ def run_scenario(name: str):
             {"sender_id": "Victim", "receiver_id": "Merchant", "amount": 500, "device_id": "V_DEV"},
             {"sender_id": "Victim", "receiver_id": "Evil", "amount": 95000, "device_id": "HACKER_HW", "location": "Unknown"}
         ],
+        "big_transaction": [
+            {"sender_id": "Whale_User", "receiver_id": "Offshore_Account", "amount": 2500000, "location": "Dubai", "device_id": "UNKNOWN_DEV"}
+        ],
         "coordinated_synergy": [
             # Build hub
             *[{"sender_id": "BossX", "receiver_id": f"Node_{i}", "amount": 1000} for i in range(10)],

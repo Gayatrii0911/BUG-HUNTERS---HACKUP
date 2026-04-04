@@ -110,11 +110,24 @@ def generate_signals(from_account: str, to_account: str, amount: float):
     # This ensures the current transaction's impact on topology is analyzed in real-time
     temp_edge_key = g.add_edge(from_account, to_account, amount=amount, timestamp=time.time())
     
+    has_cycle, cycle_path = False, []
+    is_hub = False
+    is_relay = False
+    long_chain = False
+    high_velocity = False
+    long_paths = []
+    is_cluster = False
+    is_kingpin = False
+    is_isolated_ring = False
+    is_smurfing = False
+    connections = 0
+
     try:
         has_cycle, cycle_path = detect_cycle(g, from_account)
         connections = get_connections(g, from_account)
         is_hub = connections >= 5
         is_relay = detect_relay(g, from_account) or detect_relay(g, to_account)
+        is_smurfing = detect_smurfing(g, from_account, to_account)
         
         # Comprehensive Chain Detection: Trace from current account and its immediate ancestors
         all_paths = []

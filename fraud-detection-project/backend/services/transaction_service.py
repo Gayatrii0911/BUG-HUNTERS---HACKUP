@@ -147,15 +147,25 @@ def process_transaction(tx: dict) -> dict:
             "alert_id": alert.get("alert_id") if (risk_result["risk_score"] >= 40 or decision.get("critical_fraud", False)) else "N/A"
         }
     except Exception as e:
+        import traceback
+        with open("internal_crash_log.txt", "w") as f:
+            traceback.print_exc(file=f)
         print(f"CRITICAL SYSTEM ERROR in Transaction Pipeline: {e}")
         return {
             "transaction_id": tx.get("transaction_id", "ERROR"),
-            "risk_score": 0,
+            "risk_score": 0.0,
             "risk_level": "ERROR",
             "decision": "ERROR_HALT",
             "reasons": [{"message": f"Internal Engine Error: {str(e)}", "type": "error"}],
+            "reason_categories": {"error": [{"message": f"System Failure: {str(e)}", "type": "error"}]},
+            "score_breakdown": {"System": 0.0},
+            "anomaly_score": 0.0,
+            "anomaly_level": "ERROR",
+            "confidence": 0.0,
+            "fraud_chain_detected": False,
             "is_pre_transaction_check": True,
-            "alert": True
+            "alert": True,
+            "alert_id": "ERROR_ID"
         }
 def get_training_status():
     return {
