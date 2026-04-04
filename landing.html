@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEGIS - Cyber Intelligence Platform</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Rajdhani',sans-serif;
+    background:#0a1628;
+    overflow:hidden;
+}
+
+/* BACKGROUND */
+#cyber-canvas{
+    position:absolute;
+    width:100%;
+    height:100%;
+}
+
+/* CONTENT */
+.container{
+    position:relative;
+    z-index:10;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    color:white;
+}
+
+/* TITLE */
+.title{
+    font-family:'Orbitron';
+    font-size:clamp(4rem,12vw,10rem);
+    font-weight:900;
+    letter-spacing:0.2em;
+    color:#ffffff;
+    text-shadow:0 0 25px rgba(0,242,254,0.5);
+}
+
+/* TYPEWRITER */
+.typewriter{
+    margin-top:20px;
+    font-size:clamp(1.2rem,3vw,2rem);
+    color:#e0f7ff;
+}
+
+.cursor{
+    border-right:3px solid #00f2fe;
+    animation:blink 1s infinite;
+}
+
+@keyframes blink{
+    50%{border-color:transparent;}
+}
+
+/* SUBTITLE */
+.subtitle{
+    margin-top:20px;
+    font-size:1.2rem;
+    color:#b0c4d4;
+    letter-spacing:0.2em;
+}
+
+/* SCROLL TEXT */
+.scroll{
+    position:absolute;
+    bottom:50px;
+    font-size:1rem;
+    color:#00f2fe;
+    letter-spacing:0.3em;
+    opacity:0;
+}
+
+/* LOADING */
+.loading{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:#0a1628;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    z-index:20;
+}
+
+.bar{
+    width:300px;
+    height:5px;
+    background:#1b2838;
+    margin-top:20px;
+}
+
+.progress{
+    width:0%;
+    height:100%;
+    background:#00f2fe;
+}
+
+/* ANIMATIONS */
+.fade-out{
+    opacity:0;
+    transition:1s;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="cyber-canvas"></canvas>
+
+<div class="container" id="landing">
+
+    <div class="title">AEGIS</div>
+
+    <div class="typewriter">
+        <span id="text"></span><span class="cursor"></span>
+    </div>
+
+    <div class="subtitle">
+        Real-time fraud detection for secure banking
+    </div>
+
+    <div class="scroll" id="scrollText">
+        Scroll to enter the system
+    </div>
+
+</div>
+
+<div class="loading" id="loading">
+    <h2 style="color:#00f2fe">INITIALIZING AEGIS CORE</h2>
+    <div class="bar"><div class="progress" id="progress"></div></div>
+</div>
+
+<script>
+/* BACKGROUND - SIMPLIFIED */
+const canvas=document.getElementById("cyber-canvas");
+const ctx=canvas.getContext("2d");
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let particles=[];
+
+for(let i=0;i<80;i++){
+    particles.push({
+        x:Math.random()*canvas.width,
+        y:Math.random()*canvas.height,
+        size:Math.random()*2
+    });
+}
+
+function animate(){
+    ctx.fillStyle="rgba(10,22,40,0.2)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle="#00f2fe";
+
+    particles.forEach(p=>{
+        p.y+=0.3;
+        if(p.y>canvas.height) p.y=0;
+
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+        ctx.fill();
+    });
+
+    requestAnimationFrame(animate);
+}
+animate();
+
+/* TYPEWRITER */
+const text="Before fraud makes a move, AEGIS already did.";
+let i=0;
+
+function typing(){
+    if(i<text.length){
+        document.getElementById("text").innerHTML+=text[i];
+        i++;
+        setTimeout(typing,50);
+    }
+}
+setTimeout(typing,1000);
+
+/* SCROLL TEXT SHOW */
+setTimeout(()=>{
+    document.getElementById("scrollText").style.opacity=1;
+},3000);
+
+/* SCROLL TRANSITION */
+let started=false;
+
+function start(){
+    if(started) return;
+    started=true;
+
+    document.getElementById("landing").classList.add("fade-out");
+
+    setTimeout(()=>{
+        document.getElementById("loading").style.display="flex";
+
+        let progress=0;
+        let bar=document.getElementById("progress");
+
+        let interval=setInterval(()=>{
+            progress+=2;
+            bar.style.width=progress+"%";
+
+            if(progress>=100){
+                clearInterval(interval);
+                window.location.href="http://localhost:5173/";
+            }
+        },30);
+
+    },800);
+}
+
+window.addEventListener("wheel",(e)=>{
+    if(e.deltaY>0) start();
+});
+
+/* MOBILE */
+window.addEventListener("touchmove",start);
+</script>
+
+</body>
+</html>
