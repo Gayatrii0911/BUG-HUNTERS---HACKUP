@@ -13,8 +13,7 @@ export const processTransaction = async (data) => {
 
 export const fetchAlerts = async () => {
     const response = await api.get('/alerts');
-    const data = response.data;
-    return Array.isArray(data) ? data : (data.alerts || []);
+    return response.data;
 };
 
 export const fetchTrace = async (accountId) => {

@@ -47,6 +47,10 @@ export default function Investigator() {
            setError("No transaction traces found for this account.");
         } else {
            setGraphData(elements);
+           // If the backend returned a specific focus account (e.g. from a TX trace), use it
+           if (res.account) {
+             setAccountId(res.account);
+           }
         }
       } else {
         setError(res.message || "Trace failed");
@@ -240,3 +244,7 @@ function Legend({ color, text }) {
     </div>
   );
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 052ac08e59014c513fdbaa99fdef35420966e03f

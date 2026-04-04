@@ -62,20 +62,21 @@ const NetworkGraph = ({ data, onNodeClick, highlightNode }) => {
              'border-style': 'double',
              'border-width': 5,
              'opacity': 0.8,
-             'content': 'data(label) [ LOCKED ]'
+             'content': (ele) => `${ele.data('id')} [ LOCKED ]`,
+             'color': '#ef4444'
           }
         },
         {
-          // HIGHLIGHT TARGET: Maintain high visibility for the searched node (NEON GREEN)
+          // HIGHLIGHT TARGET: High-visibility investigative focus
           selector: `node[id = "${highlightNode}"]`,
           style: {
-            'border-color': '#00ff00',
-            'border-width': 8,
-            'shadow-blur': 30,
-            'shadow-color': '#00ff00',
+            'border-color': '#39ff14',
+            'border-width': 10,
+            'shadow-blur': 40,
+            'shadow-color': '#39ff14',
             'shadow-opacity': 1,
-            'width': '50px',
-            'height': '50px',
+            'width': '55px',
+            'height': '55px',
             'z-index': 9999
           }
         },
@@ -168,16 +169,6 @@ const NetworkGraph = ({ data, onNodeClick, highlightNode }) => {
             'text-background-color': '#080a12',
             'text-background-opacity': 1,
             'text-background-padding': '2px'
-          }
-        },
-        {
-          selector: `node[id = "${highlightNode}"]`,
-          style: {
-            'border-width': 6,
-            'border-color': '#39ff14',
-            'border-opacity': 1,
-            'shadow-blur': 25,
-            'shadow-color': '#39ff14'
           }
         }
       ],
