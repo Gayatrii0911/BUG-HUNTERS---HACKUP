@@ -128,8 +128,23 @@ def generate_signals(from_account: str, to_account: str, amount: float):
         long_chain = len(long_paths) > 0
         high_velocity = any(analyze_path_velocity(g, p) for p in all_paths)
         
-        is_smurfing = detect_smurfing(g, from_account, to_account)
         is_cluster = detect_dense_cluster(g, from_account)
+        
+        # ELITE: Strategic Centrality (PageRank) - Identifies 'Master Nodes' in laundering rings
+        # On a massive graph, we would cache this; for a demo, we do it live.
+        try:
+            centrality = nx.pagerank(g, alpha=0.85)
+            is_kingpin = centrality.get(from_account, 0) > 0.05 # Top 5% of network influence
+        except:
+            is_kingpin = False
+            
+        # ELITE: Isolation Discovery (Connected Components)
+        # Finds localized fraud rings that are disconnected from the 'Main' economy
+        ug = g.to_undirected()
+        components = list(nx.connected_components(ug))
+        node_group = next((comp for comp in components if from_account in comp), set())
+        is_isolated_ring = len(node_group) > 2 and len(node_group) < 10 # Small, closed-loop rings
+        
     finally:
         # 4. Final Aggregation (Calibrated weights)
         graph_score = 0
@@ -139,6 +154,8 @@ def generate_signals(from_account: str, to_account: str, amount: float):
         if long_chain: graph_score += 25
         if is_smurfing: graph_score += 15
         if is_cluster: graph_score += 15
+        if is_kingpin: graph_score += 35 # High strategic risk
+        if is_isolated_ring: graph_score += 20
         
         # ALWAYS remove the temp edge so it doesn't double-count when add_transaction is called later
         g.remove_edge(from_account, to_account, key=temp_edge_key)
@@ -149,12 +166,14 @@ def generate_signals(from_account: str, to_account: str, amount: float):
                 "cycle_path": cycle_path,
                 "is_hub": is_hub,
                 "is_relay": is_relay,
+                "is_kingpin": is_kingpin,
+                "is_isolated_ring": is_isolated_ring,
                 "suspicious_chain": long_chain or high_velocity,
-                "chain_paths": long_paths[:2], # Limit to 2 for brevity
+                "chain_paths": long_paths[:2],
                 "is_smurfing": is_smurfing,
                 "is_cluster": is_cluster,
                 "score": min(100, graph_score),
-                "graph_risk": min(100, graph_score), # double key for safety
+                "graph_risk": min(100, graph_score), 
                 "connections": connections
             }
         }

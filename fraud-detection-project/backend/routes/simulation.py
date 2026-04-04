@@ -29,3 +29,19 @@ def reset_system():
     reset_all_db()
     
     return {"status": "ok", "message": "All backend states reset"}
+
+@router.get("/scenarios")
+def list_scenarios():
+    """Returns all ready-to-run demo scenarios."""
+    return {
+        "scenarios": [
+            {"id": "normal", "name": "Normal Usage", "description": "Baseline consumer behavior with low anomaly profile."},
+            {"id": "cycle", "name": "Cycle Fraud", "description": "Closed-loop fund rotation (A -> B -> C -> A)."},
+            {"id": "hub", "name": "Mule Hub", "description": "High-fan-in node rapidly receiving funds from many sources."},
+            {"id": "relay", "name": "Prof. Relay", "description": "Rapid pass-through node used for money laundering layering."},
+            {"id": "chain", "name": "Laundering Chain", "description": "Deep multi-hop fund flow across 5+ accounts."},
+            {"id": "smurfing", "name": "Structuring", "description": "Multiple rapid sub-threshold transactions to evade AML."},
+            {"id": "ato", "name": "Account Takeover", "description": "High-velocity identity theft with environment shift."},
+            {"id": "cluster", "name": "Fraud Ring", "description": "A dense, isolated cluster of high-intensity activity."}
+        ]
+    }

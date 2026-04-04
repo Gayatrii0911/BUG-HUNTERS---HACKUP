@@ -82,10 +82,23 @@ def analyze_behavior(tx: Dict[str, Any]) -> Dict[str, Any]:
         device_info["device_known"] = True
         if reg.get("usual_user") != user_id:
             device_info["device_user_mismatch"] = True
-        if reg.get("last_location") and reg["last_location"] != location:
-            device_info["impossible_travel"] = True
+        
+        # Elite Impossible Travel (Location change within 5 mins)
+        last_loc = reg.get("last_location")
+        last_time = reg.get("last_timestamp", 0)
+        if last_loc and last_loc != location:
+            time_gap = timestamp - last_time
+            if time_gap < 300: # Less than 5 mins between DIFFERENT locations
+                device_info["impossible_travel"] = True
+        
+        reg["last_location"] = location
+        reg["last_timestamp"] = timestamp
     else:
-        _device_registry[device_id] = {"usual_user": user_id, "last_location": location}
+        _device_registry[device_id] = {
+            "usual_user": user_id, 
+            "last_location": location, 
+            "last_timestamp": timestamp
+        }
 
     # Final Component Scoring
     d_flags = [deviations[f] for f in ["amount_exceeds_2x", "new_device", "new_location", "time_deviation", "extreme_amount", "self_transfer"]]
