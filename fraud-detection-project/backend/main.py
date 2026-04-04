@@ -45,10 +45,14 @@ def health():
         "status": "healthy",
         "version": "1.2.0",
         "uptime_seconds": int(time.time() - START_TIME),
-        "engine": "Hybrid-Graph-ML",
-        "ml_model": "IsolationForest-v1",
-        "adaptive_learning": get_training_status()
+        "engine": "Sentinel-X Elite Hybrid",
+        "training": get_training_status(),
+        "model_loaded": True
     }
+
+@app.get("/health")
+def health():
+    return {"status": "healthy", "uptime": int(time.time() - START_TIME)}
 
 @app.get("/")
 def root():

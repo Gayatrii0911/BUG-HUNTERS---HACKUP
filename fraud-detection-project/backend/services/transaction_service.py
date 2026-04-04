@@ -9,6 +9,7 @@ from backend.risk.scoring import compute_risk_score
 from backend.risk.decision import make_decision
 from backend.risk.explain import generate_explanation
 from backend.services.alert_service import generate_and_store_alert
+from backend.services.llm_service import explain_fraud_scenario
 from backend.db.repositories import save_transaction, save_alert_to_db, save_training_sample, get_training_data
 from backend.behavior.profile_store import get_profile, get_device_users
 
@@ -143,6 +144,7 @@ def process_transaction(tx: dict) -> dict:
         "fraud_chain_detected": decision.get("fraud_chain_detected", False),
         "critical_fraud": decision.get("critical_fraud", False),
         "fraud_type": decision.get("fraud_type", "normal"),
+        "forensic_summary": explain_fraud_scenario(reasons, risk_result["risk_score"], decision["action"]),
         "is_pre_transaction_check": True,
         "alert": risk_result["risk_score"] >= 40 or decision.get("critical_fraud", False),
         "alert_id": alert.get("alert_id") if (risk_result["risk_score"] >= 40 or decision.get("critical_fraud", False)) else "N/A"

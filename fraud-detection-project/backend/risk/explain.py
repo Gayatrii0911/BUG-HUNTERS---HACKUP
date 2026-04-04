@@ -107,6 +107,14 @@ def generate_explanation(
         msg = "Part of an isolated, highly-active fraud cluster or clique"
         categories["graph"].append({"message": msg, "type": "graph"})
 
+    if graph_signals.get("is_kingpin"):
+        msg = "High Strategic Centrality (PageRank): This node acts as a primary coordinator or 'Master Mule' in the network"
+        categories["graph"].append({"message": msg, "type": "strategic"})
+
+    if graph_signals.get("is_isolated_ring"):
+        msg = "Stealth Isolated Ring detected: This group is transacting in a disconnected sub-graph, typical of professional laundering units"
+        categories["graph"].append({"message": msg, "type": "strategic"})
+
     # 5. Risk History
     if recent_scores and len([s for s in recent_scores if s >= 40]) >= 1:
         msg = "Recent historical risk escalation (repeated suspicious activity)"
