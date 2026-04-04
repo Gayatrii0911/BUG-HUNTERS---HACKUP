@@ -16,16 +16,19 @@ export default function Dashboard() {
     try {
       const data = await fetchAlerts();
       const h = await fetchHealth();
-      const alertsArray = data.alerts || [];
+      const alertsArray = Array.isArray(data) ? data : (data.alerts || []);
       setAlerts(alertsArray);
       setHealth(h);
       
       if (alertsArray.length > 0) {
         const high = alertsArray.filter(a => a.risk_score >= 70).length;
-        const blocked = alertsArray.filter(a => a.decision === 'BLOCK').length;
-        const mfa = alertsArray.filter(a => a.decision === 'MFA').length;
+        const blocked = alertsArray.filter(a => (a.decision === 'BLOCK' || a.action === 'BLOCK')).length;
+        const mfa = alertsArray.filter(a => (a.decision === 'MFA' || a.action === 'MFA')).length;
         const avg = alertsArray.reduce((acc, curr) => acc + (curr.risk_score || 0), 0) / alertsArray.length;
         setStats({ total: alertsArray.length, high_risk: high, blocked, mfa, avg_score: avg });
+      } else {
+        // Reset stats if no alerts
+        setStats({ total: 0, high_risk: 0, blocked: 0, mfa: 0, avg_score: 0 });
       }
     } catch (e) {
       console.error("Dashboard sync failed", e);

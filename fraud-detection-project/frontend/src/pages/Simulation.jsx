@@ -41,7 +41,11 @@ export default function Simulation() {
     try {
       const res = await runScenario(name);
       setSimStatus(`MATRIX SYNCHRONIZED: ${res.steps || 0} VECTORS ANALYZED`);
-      setTimeout(() => setSimStatus(null), 5000);
+      setShowSuccess(true);
+      setTimeout(() => {
+        setSimStatus(null);
+        setShowSuccess(false);
+      }, 5000);
     } catch (err) {
       setSimStatus(`UPLINK FAILURE: SCENARIO ${name.toUpperCase()} INTERRUPTED`);
     } finally {
