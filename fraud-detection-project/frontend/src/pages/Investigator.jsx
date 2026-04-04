@@ -222,6 +222,10 @@ export default function Investigator() {
   );
 }
 
+<<<<<<< HEAD
+=======
+// Sub-components moved above or converted to function declarations to avoid ReferenceErrors
+>>>>>>> 052ac08e59014c513fdbaa99fdef35420966e03f
 function DetailRow({ label, value, color }) {
   return (
     <div className="flex justify-between items-center text-[11px] font-bold">
@@ -239,3 +243,7 @@ function Legend({ color, text }) {
     </div>
   );
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 052ac08e59014c513fdbaa99fdef35420966e03f
