@@ -7,8 +7,11 @@ The `backend.graph.algorithms.generate_signals` function returns a dictionary wi
 
 **Keys in `signals`**:
 - `has_cycle` (bool): `True` if the transaction completes a loop.
+- `cycle_path` (list): Ordered list of account IDs forming the loop (ex: `["A", "B", "C", "A"]`).
 - `is_hub` (bool): `True` if the sender has >= 5 unique connections.
+- `is_relay` (bool): `True` if account redistributes funds rapidly (high in-degree and out-degree).
 - `suspicious_chain` (bool): `True` if part of a multi-hop (4+) flow or high-velocity layering.
+- `chain_paths` (list): Top 2 longest or high-velocity paths found during tracing.
 - `is_smurfing` (bool): `True` if multiple small transactions between same nodes in short window.
 - `is_cluster` (bool): `True` if node is part of a dense network clique.
 - `score` (int/float): Aggregated graph risk sub-score (0-100).

@@ -84,14 +84,24 @@ def trace_funds(graph, account: str, max_depth: int = 4):
     return {"account": account, "paths": paths}
 
 # -------------------------------
-# 6. CONNECTION COUNT
+# 7. RELAY NODE DETECTION (Professional Laundering)
+# -------------------------------
+def detect_relay(graph, account: str, threshold: int = 3):
+    """Detects nodes that act as pass-through relays (High in and out)."""
+    if account not in graph: return False
+    in_degree = graph.in_degree(account)
+    out_degree = graph.out_degree(account)
+    return in_degree >= threshold and out_degree >= threshold
+
+# -------------------------------
+# 8. CONNECTION COUNT
 # -------------------------------
 def get_connections(graph, account: str):
     if account not in graph: return 0
     return len(set(graph.predecessors(account)) | set(graph.successors(account)))
 
 # -------------------------------
-# 7. GENERATE SIGNALS (The Orchestrator)
+# 9. GENERATE SIGNALS (The Orchestrator)
 # -------------------------------
 def generate_signals(from_account: str, to_account: str, amount: float):
     g = get_graph()
@@ -104,6 +114,7 @@ def generate_signals(from_account: str, to_account: str, amount: float):
         has_cycle, cycle_path = detect_cycle(g, from_account)
         connections = get_connections(g, from_account)
         is_hub = connections >= 5
+        is_relay = detect_relay(g, from_account) or detect_relay(g, to_account)
         
         # Comprehensive Chain Detection: Trace from current account and its immediate ancestors
         all_paths = []
@@ -124,6 +135,7 @@ def generate_signals(from_account: str, to_account: str, amount: float):
         graph_score = 0
         if has_cycle: graph_score += 40
         if is_hub: graph_score += 20
+        if is_relay: graph_score += 30
         if long_chain: graph_score += 25
         if is_smurfing: graph_score += 15
         if is_cluster: graph_score += 15
@@ -136,6 +148,7 @@ def generate_signals(from_account: str, to_account: str, amount: float):
                 "has_cycle": has_cycle,
                 "cycle_path": cycle_path,
                 "is_hub": is_hub,
+                "is_relay": is_relay,
                 "suspicious_chain": long_chain or high_velocity,
                 "chain_paths": long_paths[:2], # Limit to 2 for brevity
                 "is_smurfing": is_smurfing,
