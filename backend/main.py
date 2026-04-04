@@ -10,6 +10,7 @@ if hasattr(typing, 'ForwardRef'):
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.transaction import router as transaction_router
+from backend.routes.debug import router as debug_router
 from backend.routes.alerts import router as alerts_router
 from backend.routes.simulation import router as simulation_router
 from backend.routes.trace import router as trace_router
@@ -28,7 +29,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -45,12 +46,10 @@ def health():
         "status": "healthy",
         "version": "1.2.0",
         "uptime_seconds": int(time.time() - START_TIME),
-        "engine": "Sentinel-X Elite Hybrid",
-        "training": get_training_status(),
-        "model_loaded": True
+        "engine": "Hybrid-Graph-ML",
+        "ml_model": "IsolationForest-v1",
+        "adaptive_learning": get_training_status()
     }
-
-
 
 @app.get("/")
 def root():
@@ -62,6 +61,7 @@ def root():
     }
 
 app.include_router(transaction_router)
+app.include_router(debug_router)
 app.include_router(alerts_router)
 app.include_router(simulation_router)
 app.include_router(trace_router)

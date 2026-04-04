@@ -22,93 +22,92 @@ def process_transaction(tx: dict) -> dict:
     Synchronously processes Graph, Behavioral, and ML intelligence.
     Returns: A full Section 9 compliant decision object.
     """
-    if not tx.get("transaction_id"):
-        tx["transaction_id"] = str(uuid.uuid4())
-    if not tx.get("timestamp"):
-        tx["timestamp"] = str(time.time())
-
-    sender = tx.get("sender_id", "unknown")
-    receiver = tx.get("receiver_id", "unknown")
-    amount = tx.get("amount", 0)
-
-    # 1. Graph Intelligence (Real-time update & Analysis)
-    # DEFERRED: add_transaction(sender, receiver, amount) - now happens after decision
-    graph_res = generate_signals(sender, receiver, amount)
-    graph_signals = graph_res.get("signals", {})
-
-    # 2. Behavioral / Device Intelligence
-    profile = get_profile(sender)
-    behavior = get_behavior_analysis(tx)
-    deviations = behavior["deviations"]
-    device_info = behavior["device_info"]
-
-    # 3. Synthetic Identity Detection (Cross-User hardware)
-    device_id = tx.get("device_id", "unknown")
-    associated_users = get_device_users(device_id) if device_id != "unknown" else []
-    identity_signals = {
-        "shared_hardware_users": associated_users,
-        "identity_count": len(associated_users)
-    }
-
-    # 4. ML Anomaly Scoring (Graph-Aware Intelligence)
-    features = extract_features(tx, deviations, device_info, graph_signals)
-    anomaly_score = score_transaction(features)
-
-    # 5. Elite Fusion Scoring (Coordinated + History + Identity)
-    risk_result = compute_risk_score(
-        graph_signals, 
-        anomaly_score, 
-        deviations, 
-        device_info, 
-        profile["recent_risk_scores"],
-        identity_signals
-    )
-    
-    # 6. Decision & Explanation
-    decision = make_decision(
-        risk_result["risk_score"], 
-        deviations, 
-        device_info, 
-        risk_result
-    )
-    
-    # Fraud Chain Boost (if detected)
-    final_risk_score = risk_result["risk_score"]
-    if decision.get("fraud_chain_detected"):
-        final_risk_score = min(100.0, final_risk_score + 20.0)
-        risk_result["risk_score"] = final_risk_score
-        from backend.risk.scoring import _get_risk_level
-        risk_result["risk_level"] = _get_risk_level(final_risk_score)
-        decision = make_decision(final_risk_score, deviations, device_info, risk_result)
-
-    explanation_result = generate_explanation(
-        deviations, 
-        device_info, 
-        graph_signals, 
-        risk_result, 
-        profile["recent_risk_scores"],
-        identity_signals
-    )
-    
-    reasons = explanation_result["reasons"]
-    reason_categories = explanation_result["categories"]
-
-    # If fraud chain detected, add specifically to categories
-    if decision.get("fraud_chain_detected"):
-        chain_msg = {"message": "Suspicious login followed by anomalous transaction (possible account takeover)", "type": "fraud_chain"}
-        if chain_msg not in reason_categories["fraud_chain"]:
-            reason_categories["fraud_chain"].append(chain_msg)
-            reasons.append(chain_msg)
-
-    alert = generate_and_store_alert(tx, decision, reasons)
-    
-    # 7. Persistence & Lifecycle (Update profiles only after scoring)
-    update_user_profile(tx)
-    profile["recent_risk_scores"].append(final_risk_score)
-    if len(profile["recent_risk_scores"]) > 5:
-        profile["recent_risk_scores"].pop(0)
-
     try:
+        if not tx.get("transaction_id"):
+            tx["transaction_id"] = str(uuid.uuid4())
+        if not tx.get("timestamp"):
+            tx["timestamp"] = str(time.time())
+
+        sender = tx.get("sender_id", "unknown")
+        receiver = tx.get("receiver_id", "unknown")
+        amount = tx.get("amount", 0)
+
+        # 1. Graph Intelligence (Real-time update & Analysis)
+        graph_res = generate_signals(sender, receiver, amount)
+        graph_signals = graph_res.get("signals", {})
+
+        # 2. Behavioral / Device Intelligence
+        profile = get_profile(sender)
+        behavior = get_behavior_analysis(tx)
+        deviations = behavior["deviations"]
+        device_info = behavior["device_info"]
+
+        # 3. Synthetic Identity Detection (Cross-User hardware)
+        device_id = tx.get("device_id", "unknown")
+        associated_users = get_device_users(device_id) if device_id != "unknown" else []
+        identity_signals = {
+            "shared_hardware_users": associated_users,
+            "identity_count": len(associated_users)
+        }
+
+        # 4. ML Anomaly Scoring (Graph-Aware Intelligence)
+        features = extract_features(tx, deviations, device_info, graph_signals)
+        anomaly_score = score_transaction(features)
+
+        # 5. Elite Fusion Scoring (Coordinated + History + Identity)
+        risk_result = compute_risk_score(
+            graph_signals, 
+            anomaly_score, 
+            deviations, 
+            device_info, 
+            profile["recent_risk_scores"],
+            identity_signals
+        )
+        
+        # 6. Decision & Explanation
+        decision = make_decision(
+            risk_result["risk_score"], 
+            deviations, 
+            device_info, 
+            risk_result
+        )
+        
+        # Fraud Chain Boost (if detected)
+        final_risk_score = risk_result["risk_score"]
+        if decision.get("fraud_chain_detected"):
+            final_risk_score = min(100.0, final_risk_score + 20.0)
+            risk_result["risk_score"] = final_risk_score
+            from backend.risk.scoring import _get_risk_level
+            risk_result["risk_level"] = _get_risk_level(final_risk_score)
+            decision = make_decision(final_risk_score, deviations, device_info, risk_result)
+
+        explanation_result = generate_explanation(
+            deviations, 
+            device_info, 
+            graph_signals, 
+            risk_result, 
+            profile["recent_risk_scores"],
+            identity_signals
+        )
+        
+        reasons = explanation_result["reasons"]
+        reason_categories = explanation_result["categories"]
+
+        # If fraud chain detected, add specifically to categories
+        if decision.get("fraud_chain_detected"):
+            chain_msg = {"message": "Suspicious login followed by anomalous transaction (possible account takeover)", "type": "fraud_chain"}
+            if chain_msg not in reason_categories["fraud_chain"]:
+                reason_categories["fraud_chain"].append(chain_msg)
+                reasons.append(chain_msg)
+
+        alert = generate_and_store_alert(tx, decision, reasons)
+        
+        # 7. Persistence & Lifecycle (Update profiles only after scoring)
+        update_user_profile(tx)
+        profile["recent_risk_scores"].append(final_risk_score)
+        if len(profile["recent_risk_scores"]) > 5:
+            profile["recent_risk_scores"].pop(0)
+
         # 7. Persistence & Graph Uplink (Updated with Decision Metadata)
         is_fraud_tx = final_risk_score >= 70 or decision.get("critical_fraud", False)
         is_blocked_tx = decision["action"] == "BLOCK"
@@ -126,29 +125,38 @@ def process_transaction(tx: dict) -> dict:
             if all_data:
                 retrain(all_data)
                 _tx_count = 0
-    except Exception as e:
-        print(f"Post-processing error: {e}")
 
-    # ELITE RESPONSE (Full Section 9 Compatibility)
-    return {
-        "transaction_id": tx["transaction_id"],
-        "risk_score": risk_result["risk_score"],
-        "risk_level": risk_result["risk_level"],
-        "decision": decision["action"],
-        "reasons": reasons,
-        "reason_categories": reason_categories,
-        "score_breakdown": risk_result["components"],
-        "anomaly_score": risk_result["anomaly_score"],
-        "anomaly_level": risk_result["anomaly_level"],
-        "confidence": risk_result["confidence"],
-        "fraud_chain_detected": decision.get("fraud_chain_detected", False),
-        "critical_fraud": decision.get("critical_fraud", False),
-        "fraud_type": decision.get("fraud_type", "normal"),
-        "forensic_summary": explain_fraud_scenario(reasons, risk_result["risk_score"], decision["action"]),
-        "is_pre_transaction_check": True,
-        "alert": risk_result["risk_score"] >= 40 or decision.get("critical_fraud", False),
-        "alert_id": alert.get("alert_id") if (risk_result["risk_score"] >= 40 or decision.get("critical_fraud", False)) else "N/A"
-    }
+        # ELITE RESPONSE (Full Section 9 Compatibility)
+        return {
+            "transaction_id": tx["transaction_id"],
+            "risk_score": risk_result["risk_score"],
+            "risk_level": risk_result["risk_level"],
+            "decision": decision["action"],
+            "reasons": reasons,
+            "reason_categories": reason_categories,
+            "score_breakdown": risk_result["components"],
+            "anomaly_score": risk_result["anomaly_score"],
+            "anomaly_level": risk_result["anomaly_level"],
+            "confidence": risk_result["confidence"],
+            "fraud_chain_detected": decision.get("fraud_chain_detected", False),
+            "critical_fraud": decision.get("critical_fraud", False),
+            "fraud_type": decision.get("fraud_type", "normal"),
+            "forensic_summary": explain_fraud_scenario(reasons, risk_result["risk_score"], decision["action"]),
+            "is_pre_transaction_check": True,
+            "alert": risk_result["risk_score"] >= 40 or decision.get("critical_fraud", False),
+            "alert_id": alert.get("alert_id") if (risk_result["risk_score"] >= 40 or decision.get("critical_fraud", False)) else "N/A"
+        }
+    except Exception as e:
+        print(f"CRITICAL SYSTEM ERROR in Transaction Pipeline: {e}")
+        return {
+            "transaction_id": tx.get("transaction_id", "ERROR"),
+            "risk_score": 0,
+            "risk_level": "ERROR",
+            "decision": "ERROR_HALT",
+            "reasons": [{"message": f"Internal Engine Error: {str(e)}", "type": "error"}],
+            "is_pre_transaction_check": True,
+            "alert": True
+        }
 def get_training_status():
     return {
         "current_samples": _tx_count,
