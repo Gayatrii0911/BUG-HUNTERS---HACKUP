@@ -86,10 +86,10 @@ export default function Dashboard() {
                     <ShieldAlert className="w-4 h-4 text-cyber-danger" />
                     <h3 className="text-[10px] font-black text-white uppercase tracking-widest">Active Interventions</h3>
                  </div>
-                 <span className="text-[9px] text-slate-500 font-bold uppercase">{alerts.filter(a => a.decision === 'BLOCK').length} TOTAL</span>
+                 <span className="text-[9px] text-slate-500 font-bold uppercase">{alerts.filter(a => ((a.decision || a.action) === 'BLOCK')).length} TOTAL</span>
               </div>
               <div className="space-y-3">
-                 {alerts.filter(a => a.decision === 'BLOCK').slice(0, 3).map((a, idx) => (
+                 {alerts.filter(a => ((a.decision || a.action) === 'BLOCK')).slice(0, 3).map((a, idx) => (
                     <div key={idx} className="flex items-center justify-between p-3 bg-cyber-danger/5 rounded-lg border border-cyber-danger/10">
                        <div className="flex flex-col">
                           <span className="text-[10px] font-black text-white uppercase">Account Locked: {a.sender_id || a.user_id}</span>
@@ -98,7 +98,7 @@ export default function Dashboard() {
                        <div className="text-[8px] font-bold text-cyber-danger uppercase border border-cyber-danger px-2 py-1 rounded">Halt Executed</div>
                     </div>
                  ))}
-                 {alerts.filter(a => a.decision === 'BLOCK').length === 0 && (
+                 {alerts.filter(a => ((a.decision || a.action) === 'BLOCK')).length === 0 && (
                     <div className="flex flex-col items-center justify-center py-10 space-y-3 opacity-40">
                        <ShieldAlert className="w-8 h-8 text-slate-500" />
                        <div className="text-center px-6">
@@ -116,10 +116,10 @@ export default function Dashboard() {
                     <Activity className="w-4 h-4 text-cyber-warning" />
                     <h3 className="text-[10px] font-black text-white uppercase tracking-widest">Validation Challenges</h3>
                  </div>
-                 <span className="text-[9px] text-slate-500 font-bold uppercase">{alerts.filter(a => a.decision === 'MFA').length} ACTIVE</span>
+                 <span className="text-[9px] text-slate-500 font-bold uppercase">{alerts.filter(a => ((a.decision || a.action) === 'MFA')).length} ACTIVE</span>
               </div>
               <div className="space-y-3">
-                 {alerts.filter(a => a.decision === 'MFA').slice(0, 3).map((a, idx) => (
+                 {alerts.filter(a => ((a.decision || a.action) === 'MFA')).slice(0, 3).map((a, idx) => (
                     <div key={idx} className="flex items-center justify-between p-3 bg-cyber-warning/5 rounded-lg border border-cyber-warning/10">
                        <div className="flex flex-col">
                           <span className="text-[10px] font-black text-white uppercase">MFA Escalation: {a.sender_id || a.user_id}</span>
@@ -128,7 +128,7 @@ export default function Dashboard() {
                        <div className="text-[8px] font-bold text-cyber-warning uppercase animate-pulse underline">Pending</div>
                     </div>
                  ))}
-                 {alerts.filter(a => a.decision === 'MFA').length === 0 && (
+                 {alerts.filter(a => ((a.decision || a.action) === 'MFA')).length === 0 && (
                     <div className="flex flex-col items-center justify-center py-10 space-y-3 opacity-40">
                        <Activity className="w-8 h-8 text-slate-500" />
                        <div className="text-center px-6">

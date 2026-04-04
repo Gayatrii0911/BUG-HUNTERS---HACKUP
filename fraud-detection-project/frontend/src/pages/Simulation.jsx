@@ -110,19 +110,26 @@ export default function Simulation() {
               </p>
            </div>
            
-               <div className="mt-8 pt-8 border-t border-cyber-border space-y-4">
-                  <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Demo Orchestration</h3>
-                  <button 
-                    onClick={() => handleScenario('mule_hub')}
-                    className="w-full py-4 bg-cyber-accent/10 border border-cyber-accent text-cyber-accent rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyber-accent hover:text-cyber-bg transition-all shadow-[0_0_20px_rgba(0,245,255,0.15)] group"
-                  >
-                     <RefreshCw className="w-4 h-4 inline-block mr-2 group-hover:rotate-180 transition-transform" />
-                     Initialize Fraud Matrix (Demo Hub)
-                  </button>
-                  <p className="text-[8px] text-slate-600 font-bold uppercase text-center px-4">
-                     Warning: This will inject 50+ nodes and edges into the real-time neural buffer for forensic testing.
-                  </p>
-               </div>
+                <div className="mt-8 pt-8 border-t border-cyber-border space-y-4">
+                   <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Demo Orchestration</h3>
+                   <button 
+                     onClick={() => handleScenario('mule_hub')}
+                     className="w-full py-4 bg-cyber-accent/10 border border-cyber-border text-cyber-accent rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyber-accent hover:text-cyber-bg transition-all group"
+                   >
+                      <RefreshCw className="w-4 h-4 inline-block mr-2 group-hover:rotate-180 transition-transform" />
+                      Initialize Fraud Matrix (Scenario 4)
+                   </button>
+                   <button 
+                     onClick={() => handleScenario('nexus_live')}
+                     className="w-full py-4 bg-cyber-danger/10 border border-cyber-danger text-cyber-danger rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyber-danger hover:text-black transition-all shadow-[0_0_20px_rgba(255,0,60,0.15)] group"
+                   >
+                      <Zap className="w-4 h-4 inline-block mr-2 animate-pulse" />
+                      Nexus Real-World Load (Complex)
+                   </button>
+                   <p className="text-[8px] text-slate-600 font-bold uppercase text-center px-4">
+                      Warning: Nexus Load injects multi-hop cycles, smurfing rings, and geographic anomalies for elite forensic testing.
+                   </p>
+                </div>
             </div>
          </div>
 

@@ -46,6 +46,29 @@ def run_scenario(name: str):
              {"sender_id": "Repeater", "receiver_id": "A", "amount": 5000},
              {"sender_id": "Repeater", "receiver_id": "B", "amount": 5000},
              {"sender_id": "Repeater", "receiver_id": "C", "amount": 5000} # Escalation should trigger
+        ],
+        "nexus_live": [
+            # High Volume Legitimate Traffic
+            {"sender_id": "User_PX", "receiver_id": "Zomato", "amount": 450, "location": "Bangalore", "device_id": "D_ANDR_1"},
+            {"sender_id": "User_PX", "receiver_id": "Amazon_IN", "amount": 12500, "location": "Bangalore", "device_id": "D_ANDR_1"},
+            {"sender_id": "User_MK", "receiver_id": "Reliance_Fresh", "amount": 3200, "location": "Mumbai", "device_id": "D_IOS_9"},
+            {"sender_id": "User_SK", "receiver_id": "Uber_India", "amount": 890, "location": "Delhi", "device_id": "D_ANDR_X"},
+            
+            # Subtle Smurfing (Low amounts, high frequency)
+            *[{"sender_id": "SmurfNode", "receiver_id": "LaunderTarget", "amount": 150, "device_id": "S_BOT_7"} for _ in range(8)],
+            
+            # Velocity Attack (Fast repeated hits)
+            *[{"sender_id": "Hacker_X", "receiver_id": "Victim_A", "amount": 95000, "location": "Ukraine", "device_id": "PROXY_HW"} for _ in range(4)],
+            
+            # Complex Ring (Multi-hop)
+            {"sender_id": "Ring_Leader", "receiver_id": "Node_1", "amount": 500000},
+            {"sender_id": "Node_1", "receiver_id": "Node_2", "amount": 490000},
+            {"sender_id": "Node_2", "receiver_id": "Node_3", "amount": 485000},
+            {"sender_id": "Node_3", "receiver_id": "Ring_Leader", "amount": 480000}, # Cycle detection
+            
+            # Geographic Anomaly
+            {"sender_id": "Regular_User", "receiver_id": "Local_Shop", "amount": 50, "location": "Pune", "device_id": "D_PUNE_1"},
+            {"sender_id": "Regular_User", "receiver_id": "Casino_Global", "amount": 99000, "location": "Macau", "device_id": "UNKNOWN_HW"}
         ]
     }
 
